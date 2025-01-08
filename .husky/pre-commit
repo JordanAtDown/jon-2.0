@@ -1,0 +1,17 @@
+# # .husky/pre-commit
+# #!/bin/sh
+# . "$(dirname "$0")/_/husky.sh"
+
+# echo "🔧 Running tests before commit..."
+
+# # Exécuter les tests Vitest
+# npm run lint:fix && npm run format:check && npm run test
+
+# # Annuler le commit si les tests échouent
+# if [ $? -ne 0 ]; then
+#   echo "❌ Tests failed. Commit canceled."
+#   exit 1
+# fi
+
+# echo "✅ Tests passed successfully. Proceeding with commit."
+

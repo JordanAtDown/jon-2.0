@@ -1,0 +1,35 @@
+# Ignorer les dossiers de développement
+node_modules/
+dist/
+coverage/
+tests/
+temp/
+.vscode/
+.idea/
+
+# Ignorer les fichiers de configuration et outils de build
+tsconfig.json
+jest.config.js
+vitest.config.ts
+.eslintrc.json
+.prettierrc
+package-lock.json
+
+# Ignorer les fichiers de gestion de version et CI/CD
+.husky/
+.git/
+.gitignore
+.github/
+.env
+.DS_Store
+
+# Ignorer la documentation locale
+*.md
+CHANGELOG.md
+README.md
+
+# Ignorer les fichiers de logs et de système
+*.log
+npm-debug.log
+yarn-debug.log
+yarn-error.log

@@ -1,0 +1,54 @@
+# Fichiers générés par npm
+node_modules/
+
+# Sortie de la compilation TypeScript
+dist/
+out/
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+
+# Fichiers de cache et logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Cache de TypeScript
+*.tsbuildinfo
+
+# Éditeur et IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Tests et couverture de code
+coverage/
+*.lcov
+*.lcov.info
+
+# Environnement spécifique à Mac/Linux/Windows
+.DS_Store
+Thumbs.db
+
+# Fichiers temporaires
+*.tmp
+*.bak
+*.env.local
+*.env.*.local
+
+# Jetables pour le CLI npm
+.npm/
+.npmrc
+
+# Dépendances globales (par précaution)
+.npm-global/
+
+# Dépendances liées à pnpm (si jamais utilisé)
+.pnpm-store/
+
+# Clé SSH ou fichiers sensibles (à ne jamais versionner)
+*.pem
+*.key
