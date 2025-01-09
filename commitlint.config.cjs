@@ -1,6 +1,4 @@
-import type { UserConfig } from '@commitlint/types';
-
-const Configuration: UserConfig = {
+module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
     'type-enum': [
@@ -20,5 +18,3 @@ const Configuration: UserConfig = {
     'header-max-length': [2, 'always', 100], // Limite de 100 caractères par message
   },
 };
-
-export default Configuration;

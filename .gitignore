@@ -4,7 +4,6 @@ node_modules/
 # Sortie de la compilation TypeScript
 dist/
 out/
-*.js
 *.js.map
 *.d.ts
 *.d.ts.map

@@ -1,6 +1,6 @@
 {
   "name": "jon-2.0",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
@@ -9,7 +9,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "build": "tsc",
-    "test": "vitest",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "clean": "rm -rf dist coverage",
@@ -19,9 +19,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "commit": "npx git-cz",
-    "release": "npx standard-version && npm run git:release && npm run npm:publish",
-    "git:release": "git push && git push --tags",
-    "npm:publish": "npm publish --access public"
+    "semantic-release": "semantic-release",
+    "prepare": "husky install"
   },
   "type": "module",
   "keywords": [],
@@ -35,7 +34,9 @@
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
-    "@types/node": "^22.10.5",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/github": "^11.0.1",
+    "@semantic-release/npm": "^12.0.1",
     "@typescript-eslint/eslint-plugin": "^8.19.1",
     "@typescript-eslint/parser": "^8.19.1",
     "@vitest/coverage-v8": "^2.1.8",
@@ -46,14 +47,13 @@
     "eslint-plugin-prettier": "^5.2.1",
     "husky": "^9.1.7",
     "prettier": "^3.4.2",
-    "standard-version": "^9.5.0",
-    "ts-node": "^10.9.2",
+    "semantic-release": "^24.2.1",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8"
   },
   "commitlint": {
     "extends": [
-      "./commitlint.config.ts"
+      "./commitlint.config.cjs"
     ]
   },
   "config": {
