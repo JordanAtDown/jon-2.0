@@ -31,6 +31,9 @@
   },
   "homepage": "https://github.com/JordanAtDown/jon-2.0#readme",
   "description": "",
+  "dependencies": {
+    "fp-ts": "^2.16.9"
+  },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
