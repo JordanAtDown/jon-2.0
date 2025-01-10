@@ -19,7 +19,7 @@ export type FileMetadata = {
 export const standardExtractor: MetadataExtractor = {
   extract: (filePath) =>
     TE.right({
-      name: path.basename(filePath),
+      name: path.parse(filePath).name,
       fullPath: path.dirname(filePath),
       extension: path.extname(filePath),
     }),

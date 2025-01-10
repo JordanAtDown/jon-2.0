@@ -16,7 +16,7 @@ describe('extractor.ts', () => {
 
       expectRight(result, (metadata) => {
         expect(metadata).toMatchObject({
-          name: 'file.jpg',
+          name: 'file',
           fullPath: '/path/to',
           extension: '.jpg',
         });
@@ -82,7 +82,7 @@ describe('extractor.ts', () => {
       // Validate that the combined metadata is correct
       expectRight(result, (metadata) => {
         expect(metadata).toMatchObject({
-          name: 'file.jpg',
+          name: 'file',
           fullPath: '/path/to',
           extension: '.jpg',
           exif: mockExifData,

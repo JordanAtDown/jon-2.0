@@ -3,13 +3,12 @@ import { pipe } from 'fp-ts/lib/function';
 import * as path from 'path';
 import { FileMetadata, MetadataExtractor } from './extractor';
 import { isDirectory, readDirectory } from './filesystem.utils';
+import * as fs from 'fs';
 
 /**
  * Étape 1 : Valider que le chemin est un répertoire
  */
-export const validateDirectory = (
-  directory: string,
-): TE.TaskEither<Error, string> =>
+const validateDirectory = (directory: string): TE.TaskEither<Error, string> =>
   pipe(
     isDirectory(directory),
     TE.chain((isDir) =>
@@ -46,7 +45,7 @@ export const findAllFilesRecursively = (
 /**
  * Étape 3 : Extraire les métadonnées des fichiers
  */
-export const extractFilesMetadata = (
+const extractFilesMetadata = (
   files: string[],
   extractor: MetadataExtractor,
 ): TE.TaskEither<Error, FileMetadata[]> =>
@@ -66,6 +65,26 @@ export const extractFilesMetadata = (
     TE.map((fileMetadataArray) => [...fileMetadataArray]), // Conversion vers un tableau mutable
   );
 
+const saveMetadata = (
+  filesMetadata: FileMetadata[],
+): TE.TaskEither<Error, void> =>
+  pipe(
+    TE.tryCatch(
+      () => {
+        filesMetadata.forEach((metadata) => {
+          const jsonFilePath = `${metadata.fullPath}/${metadata.name}.metadata.json`;
+          fs.writeFileSync(
+            jsonFilePath,
+            JSON.stringify(metadata, null, 2),
+            'utf-8',
+          );
+        });
+        return Promise.resolve();
+      },
+      (err) => new Error(`Failed to write metadata: ${err}`),
+    ),
+  );
+
 /**
  * Méthode principale : Chaîne de validation, récupération et extraction
  */
@@ -77,4 +96,5 @@ export const extractMetadataWorkflow = (
     validateDirectory(directory),
     TE.chain(findAllFilesRecursively),
     TE.chain((files) => extractFilesMetadata(files, extractor)),
+    TE.chainFirst((filesMetadata) => saveMetadata(filesMetadata)),
   );
