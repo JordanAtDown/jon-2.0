@@ -7,13 +7,13 @@ import {
   expectRight,
   expectSome,
 } from '../../../../src/domain/shared/utils/test/Expected';
-import CheckpointManager from '../../../../src/infra/shared/checkpoint/NeDBCheckpoint';
+import NeDBCheckpoint from '../../../../src/infra/shared/checkpoint/NeDBCheckpoint';
 import CheckpointEntity from '../../../../src/infra/shared/checkpoint/CheckpointEntity';
 import NeDBCheckpoint from '../../../../src/infra/shared/checkpoint/NeDBCheckpoint';
 
 describe('CheckpointManager', () => {
   const testDbPath = './temps/CheckpointManager/';
-  let repo: CheckpointManager;
+  let repo: NeDBCheckpoint;
   let helper: CheckpointDatastoreHelper;
 
   beforeAll(async () => {

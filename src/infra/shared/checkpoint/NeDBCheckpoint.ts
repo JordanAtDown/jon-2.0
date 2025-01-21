@@ -10,7 +10,7 @@ import CheckpointEntity, {
 } from './CheckpointEntity';
 import CheckpointData from '../../../domain/shared/checkpoint/CheckpointData';
 
-export class CheckpointManager
+export class NeDBCheckpoint
   extends BaseRepository<CheckpointEntity>
   implements Checkpoint
 {
@@ -62,4 +62,4 @@ export class CheckpointManager
   }
 }
 
-export default CheckpointManager;
+export default NeDBCheckpoint;
