@@ -22,6 +22,7 @@ yarn-error.log*
 .idea/
 *.swp
 *.swo
+*.iml
 
 # Tests et couverture de code
 coverage/
