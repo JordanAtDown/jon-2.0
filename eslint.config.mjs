@@ -24,6 +24,6 @@ export default [
       quotes: ['error', 'single'],
       'no-console': 'warn',
     },
-    ignores: ['node_modules/', 'dist/', 'coverage/', '*.mjs'], // Exclusions modernes
+    ignores: ['node_modules/*', './dist/*', 'coverage/', '*.mjs'], // Exclusions modernes
   },
 ];
