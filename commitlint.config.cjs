@@ -12,6 +12,7 @@ module.exports = {
         'style', // Changements de style (indentation, etc.)
         'refactor', // Refactorisation du code sans changement de comportement
         'test', // Ajout ou modification de tests
+        'ci', // Only for CI configuration
       ],
     ],
     'subject-case': [2, 'always', 'sentence-case'], // Sujet capitalisé
