@@ -15,7 +15,7 @@ class MovingAllFileWithCompileMetadataUseCase {
     this.compiledMetadataRepository = compiledMetadataRepository;
   }
 
-  public moveAllFiles = (): TE.TaskEither<Error, void> => {
+  public copyAllFiles = (): TE.TaskEither<Error, void> => {
     return pipe(
       this.compiledMetadataRepository.getAllUniqueYearsMonths(),
       TE.chain((yearMonths: YearMonth[]) =>

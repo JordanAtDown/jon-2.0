@@ -44,7 +44,7 @@ describe('Composite Extractor', () => {
 
     expectRight(result, (metadata: Partial<FileMetadata>) => {
       expect(metadata.name).toBe(path.parse(testImagePath).name);
-      expect(metadata.fullPath).toBe(path.dirname(testImagePath));
+      expect(metadata.fullPath).toBe(`${testImagePath}`);
       expect(metadata.extension).toBe(path.extname(testImagePath));
       expect(metadata?.exif).toBeDefined();
     });

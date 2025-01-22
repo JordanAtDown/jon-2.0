@@ -21,7 +21,8 @@ const compositeExtractor =
 
 const extractStandardMetadata = (filePath: string): FileMetadata => ({
   name: path.parse(filePath).name,
-  fullPath: path.dirname(filePath),
+  fullPath: filePath,
+  directory: path.dirname(filePath),
   extension: path.extname(filePath),
 });
 

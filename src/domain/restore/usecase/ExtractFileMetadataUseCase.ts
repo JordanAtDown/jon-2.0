@@ -47,7 +47,7 @@ class ExtractFileMetadataUseCase {
         return { batches, tracker };
       }),
       TE.chain(({ batches, tracker }) =>
-        this.processBatches(batches, tracker)(),
+        this.processBatches(batches, tracker, command.idCheckpoint)(),
       ),
     );
 
@@ -94,10 +94,11 @@ class ExtractFileMetadataUseCase {
    *
    * @param batches - Batches of file paths to be processed.
    * @param tracker - Instance of ProgressTracker to track progress as each file is processed.
+   * @param idCheckpoint - updating checkpoint after each batch
    * @returns A function that takes a list of batches and processes them with metadata extraction and saving.
    */
   private processBatches =
-    (batches: string[][], tracker: ProgressTracker) =>
+    (batches: string[][], tracker: ProgressTracker, idCheckpoint: string) =>
     (): TE.TaskEither<Error, FileMetadata[][]> =>
       pipe(
         TE.sequenceArray(
@@ -119,7 +120,12 @@ class ExtractFileMetadataUseCase {
                   ),
                 ),
               ),
-              TE.map((readonlyBatch) => [...readonlyBatch]),
+              TE.chain((readonlyBatch) =>
+                pipe(
+                  this.checkpoint.update(idCheckpoint, new Set(batch)),
+                  TE.map(() => [...readonlyBatch]),
+                ),
+              ),
             ),
           ),
         ),

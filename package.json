@@ -11,9 +11,9 @@
   },
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc && npm run copy-resources && npm run copy-conf",
-    "copy-resources": "cp -r resources dist",
-    "copy-conf": "cp package.json dist/",
+    "build": "tsc && npm run copy-resources && npm run copy-conf-npm",
+    "copy-resources": "cp -r resources dist/",
+    "copy-conf-npm": "cp package.json dist/ && cp README.md dist/",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",

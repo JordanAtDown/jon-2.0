@@ -30,6 +30,7 @@ describe('NeDBFileMetadataRepository', () => {
     const fileMetadata = {
       name: 'file.txt',
       fullPath: '/files/file.txt',
+      directory: `${testDbPath}files`,
       extension: '.txt',
       exif: {
         Make: 'TestCamera',
@@ -56,6 +57,7 @@ describe('NeDBFileMetadataRepository', () => {
         _id: fileMetadata.fullPath,
         name: 'file.txt',
         fullPath: '/files/file.txt',
+        directory: `${testDbPath}files`,
         extension: '.txt',
         exif: {
           Make: 'TestCamera',
