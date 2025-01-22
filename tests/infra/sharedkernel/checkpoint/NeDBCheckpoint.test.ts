@@ -7,9 +7,9 @@ import {
   expectRight,
   expectSome,
 } from '../../../../src/domain/shared/utils/test/Expected';
-import NeDBCheckpoint from '../../../../src/infra/shared/checkpoint/NeDBCheckpoint';
-import CheckpointEntity from '../../../../src/infra/shared/checkpoint/CheckpointEntity';
-import NeDBCheckpoint from '../../../../src/infra/shared/checkpoint/NeDBCheckpoint';
+import NeDBCheckpoint from '../../../../src/infra/sharedkernel/checkpoint/NeDBCheckpoint';
+import CheckpointEntity from '../../../../src/infra/sharedkernel/checkpoint/CheckpointEntity';
+import { CategorySource } from '../../../../src/domain/sharedkernel/checkpoint/CheckpointData';
 
 describe('CheckpointManager', () => {
   const testDbPath = './temps/CheckpointManager/';
@@ -32,11 +32,13 @@ describe('CheckpointManager', () => {
   });
 
   it('should successfully save and retrieve a checkpoint by ID', async () => {
+    const date = new Date();
     const checkpointEntity: CheckpointEntity = {
       _id: 'checkpoint-1',
-      lastUpdateDate: new Date(),
-      processedFiles: ['file1.jpg', 'file2.jpg'],
-      path: '/path/to/checkpoint',
+      category: 'ID',
+      lastUpdate: date,
+      processed: ['file1.jpg', 'file2.jpg'],
+      source: '/path/to/checkpoint',
     };
 
     await helper.saveOrUpdate(checkpointEntity, { _id: 'checkpoint-1' })();
@@ -47,7 +49,10 @@ describe('CheckpointManager', () => {
         expect(data).toEqual(
           expect.objectContaining({
             _id: 'checkpoint-1',
-            processedFiles: expect.arrayContaining(['file1.jpg', 'file2.jpg']),
+            category: 'ID',
+            lastUpdate: date,
+            processed: expect.arrayContaining(['file1.jpg', 'file2.jpg']),
+            source: '/path/to/checkpoint',
           }),
         );
       });
@@ -55,13 +60,15 @@ describe('CheckpointManager', () => {
   });
 
   it('should update an existing checkpoint', async () => {
+    const initialDate = new Date('2023-11-01T10:00:00.000Z');
     const newFiles = new Set(['new-file.jpg']);
 
     const checkpointEntity: CheckpointEntity = {
       _id: 'checkpoint-1',
-      lastUpdateDate: new Date(),
-      path: '/path/to/checkpoint',
-      processedFiles: ['file1.jpg', 'file2.jpg'],
+      category: 'ID',
+      lastUpdate: initialDate,
+      source: '/path/to/checkpoint',
+      processed: ['file1.jpg', 'file2.jpg'],
     };
 
     await helper.saveOrUpdate(checkpointEntity, { _id: 'checkpoint-1' })();
@@ -69,7 +76,18 @@ describe('CheckpointManager', () => {
     const updateResult = await repo.update('checkpoint-1', newFiles)();
 
     expectRight(updateResult, (updatedCheckpoint) => {
-      expect(updatedCheckpoint.processedFiles).toContain('new-file.jpg');
+      expect(updatedCheckpoint.processed).toContain('new-file.jpg');
+      expect(updatedCheckpoint.processed).toEqual(
+        expect.arrayContaining(['file1.jpg', 'file2.jpg', 'new-file.jpg']),
+      );
+      expect(updatedCheckpoint.lastUpdate).not.toEqual(initialDate);
+      expect(updatedCheckpoint).toEqual(
+        expect.objectContaining({
+          _id: 'checkpoint-1',
+          category: 'ID',
+          source: '/path/to/checkpoint',
+        }),
+      );
     });
   });
 
@@ -79,6 +97,32 @@ describe('CheckpointManager', () => {
     expectLeft(updateResult, (error) => {
       expect(error).toBeInstanceOf(Error);
       expect(error.message).toContain('Checkpoint with ID');
+    });
+  });
+
+  it('should create a new checkpoint', async () => {
+    const date = new Date();
+    const newCheckpoint = {
+      _id: '',
+      category: CategorySource.ID,
+      lastUpdate: date,
+      processed: ['test1.jpg', 'test2.jpg'],
+      source: '/path/to/test',
+    };
+
+    const result = await repo.create(newCheckpoint)();
+
+    expectRight(result, (createdCheckpoint) => {
+      expect(createdCheckpoint).toEqual(
+        expect.objectContaining({
+          category: 'ID',
+          lastUpdate: date,
+          processed: expect.arrayContaining(['test1.jpg', 'test2.jpg']),
+          source: '/path/to/test',
+        }),
+      );
+      expect(createdCheckpoint._id).toBeDefined();
+      expect(createdCheckpoint._id).not.toEqual('');
     });
   });
 });

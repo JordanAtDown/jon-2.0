@@ -28,7 +28,13 @@
     "prepare": "npm run build"
   },
   "type": "module",
-  "keywords": ["exiftool", "exif", "photo", "sort", "catalog"],
+  "keywords": [
+    "exiftool",
+    "exif",
+    "photo",
+    "sort",
+    "catalog"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
@@ -40,7 +46,8 @@
     "@seald-io/nedb": "^4.0.4",
     "exiftool-vendored": "^29.0.0",
     "fast-glob": "^3.3.3",
-    "fp-ts": "^2.16.9"
+    "fp-ts": "^2.16.9",
+    "uuid": "^11.0.5"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",

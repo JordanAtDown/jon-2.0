@@ -52,3 +52,7 @@ Thumbs.db
 # Clé SSH ou fichiers sensibles (à ne jamais versionner)
 *.pem
 *.key
+
+# Sortie de test
+/temp/
+/temps/
