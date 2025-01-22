@@ -1,16 +1,17 @@
 import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 import FileScanner from '../../shared/filesystem/FileScanner';
-import Checkpoint from '../../shared/checkpoint/Checkpoint';
 import FileMetadataRepository from '../FileMetadataRepository';
 import { fold } from 'fp-ts/Option';
-import ExtractFileMetadataCommand from './ExtractFileMetadataCommand';
 import FileMetadata from '../FileMetadata';
 import { batchArray } from '../../shared/utils/batch/BatchArray';
 import buildPatterns from '../../shared/filesystem/BuildPattern';
 import { filterItems } from '../../shared/utils/fp/FP';
 import Extractor from '../../shared/extractor/Extractor';
 import compositeExtractor from '../../shared/extractor/CompositeExtractor';
+import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint';
+import ExtractFileMetadataCommand from './ExtractFileMetadataCommand';
+import ProgressTracker from '../../shared/tracker/ProgressTracker';
 
 class ExtractFileMetadataUseCase {
   constructor(
@@ -40,9 +41,13 @@ class ExtractFileMetadataUseCase {
         command.extensions,
         command.idCheckpoint,
       ),
-      TE.map((files) => batchArray(files, command.batchSize)),
-      TE.chain(
-        this.processBatches(this.extractors, this.fileMetadataRepository),
+      TE.map((files) => {
+        const tracker = ProgressTracker.init(files.length, command.progress);
+        const batches = batchArray(files, command.batchSize);
+        return { batches, tracker };
+      }),
+      TE.chain(({ batches, tracker }) =>
+        this.processBatches(batches, tracker)(),
       ),
     );
 
@@ -57,7 +62,7 @@ class ExtractFileMetadataUseCase {
   private scanAndFilterFiles = (
     rootDirectory: string,
     extensions: string[],
-    idCheckpoint: string = '',
+    idCheckpoint: string,
   ): TE.TaskEither<Error, string[]> =>
     pipe(
       this.fileScanner.scanFiles(rootDirectory, buildPatterns(extensions)),
@@ -78,7 +83,7 @@ class ExtractFileMetadataUseCase {
         TE.map(
           fold(
             () => [],
-            (checkpointData) => checkpointData.processedFiles,
+            (checkpointData) => checkpointData.processed,
           ),
         ),
         TE.map((processedFiles) => filterItems(allFiles, processedFiles)),
@@ -87,13 +92,13 @@ class ExtractFileMetadataUseCase {
   /**
    * Processes and extracts metadata for each batch of files.
    *
-   * @param extractors - A list of MetadataExtractors to enrich file metadata.
-   * @param fileMetadataRepository - The repository to save extracted metadata.
+   * @param batches - Batches of file paths to be processed.
+   * @param tracker - Instance of ProgressTracker to track progress as each file is processed.
    * @returns A function that takes a list of batches and processes them with metadata extraction and saving.
    */
   private processBatches =
-    (extractors: Extractor[], fileMetadataRepository: FileMetadataRepository) =>
-    (batches: string[][]): TE.TaskEither<Error, FileMetadata[][]> =>
+    (batches: string[][], tracker: ProgressTracker) =>
+    (): TE.TaskEither<Error, FileMetadata[][]> =>
       pipe(
         TE.sequenceArray(
           batches.map((batch) =>
@@ -101,11 +106,14 @@ class ExtractFileMetadataUseCase {
               TE.sequenceArray<FileMetadata, Error>(
                 batch.map((filePath) =>
                   pipe(
-                    compositeExtractor(extractors)(filePath),
+                    compositeExtractor(this.extractors)(filePath),
                     TE.chain((metadata) =>
                       pipe(
-                        fileMetadataRepository.save(metadata),
-                        TE.map(() => metadata),
+                        this.fileMetadataRepository.save(metadata),
+                        TE.map(() => {
+                          tracker = tracker.increment();
+                          return metadata;
+                        }),
                       ),
                     ),
                   ),
