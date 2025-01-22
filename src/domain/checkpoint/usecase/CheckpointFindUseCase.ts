@@ -16,3 +16,5 @@ class CheckpointFindUseCase {
     return this.checkpoint.findCheckpoints(command.filter);
   }
 }
+
+export default CheckpointFindUseCase;
