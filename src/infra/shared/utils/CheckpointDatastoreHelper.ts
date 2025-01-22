@@ -1,5 +1,5 @@
 import { BaseRepository } from './BaseRepository';
-import CheckpointEntity from '../checkpoint/CheckpointEntity';
+import CheckpointEntity from '../../sharedkernel/checkpoint/CheckpointEntity';
 
 class CompiledMetadataDatastoreHelper extends BaseRepository<CheckpointEntity> {
   createEntity(param: {

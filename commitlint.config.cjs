@@ -13,6 +13,7 @@ module.exports = {
         'refactor', // Refactorisation du code sans changement de comportement
         'test', // Ajout ou modification de tests
         'ci', // Only for CI configuration
+        'build', // Affect build
       ],
     ],
     'subject-case': [2, 'always', 'sentence-case'], // Sujet capitalisé

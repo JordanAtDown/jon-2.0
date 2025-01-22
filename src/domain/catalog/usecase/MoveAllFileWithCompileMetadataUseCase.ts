@@ -72,8 +72,10 @@ class MovingAllFileWithCompileMetadataUseCase {
           TE.chain((filePath) =>
             renameFile(filePath, metadata.newName, occurenceIdentifier),
           ),
-          TE.chain((renamedFilePath) =>
-            applyExifKeywords(renamedFilePath, metadata.tags),
+          TE.chain(
+            (renamedFilePath) =>
+              applyExifKeywords(renamedFilePath, metadata.tags),
+            // TODO: Apply exif dateTimeOriginal si aucune exif
           ),
           TE.map(() => void 0),
         ),

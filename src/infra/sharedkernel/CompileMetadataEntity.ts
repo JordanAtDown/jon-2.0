@@ -18,8 +18,6 @@ const mapCompileMetadataEntityToMetadata = (
   fullPath: entity.fullPath,
   tags: entity.tags as Tags,
   destinationFolder: entity.destinationFolder,
-  year: entity.year,
-  month: entity.month,
   hasExif: entity.hasExif,
   newName: entity.newName,
 });
