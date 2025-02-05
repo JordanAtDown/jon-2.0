@@ -1,12 +1,13 @@
 import {
   CategorySource,
   CheckpointData,
-} from '../../../domain/sharedkernel/checkpoint/CheckpointData';
+} from '../../../domain/sharedkernel/checkpoint/CheckpointData.js';
+import { DateTime } from 'luxon';
 
 type CheckpointEntity = {
   _id: string;
   category: string;
-  lastUpdate: Date;
+  lastUpdate: string;
   source: string;
   processed: string[];
 };
@@ -16,9 +17,9 @@ export const mapCheckpointDataToEntity = (
 ): CheckpointEntity => ({
   _id: data._id,
   category: data.category,
-  lastUpdate: data.lastUpdate,
+  lastUpdate: data.lastUpdate.toISO() ?? DateTime.now().toISO(),
   source: data.source,
-  processed: data.processed,
+  processed: Array.from(data.processed),
 });
 
 export const mapCheckpointEntityToData = (
@@ -26,9 +27,9 @@ export const mapCheckpointEntityToData = (
 ): CheckpointData => ({
   _id: entity._id,
   category: entity.category as CategorySource,
-  lastUpdate: entity.lastUpdate,
+  lastUpdate: DateTime.fromISO(entity.lastUpdate),
   source: entity.source,
-  processed: entity.processed,
+  processed: new Set(entity.processed),
 });
 
 export default CheckpointEntity;

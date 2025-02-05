@@ -1,4 +1,4 @@
-import Tags from './Tags';
+import Tags from './Tags.js';
 
 interface TagsGenerator {
   generate(items: string[]): Tags;

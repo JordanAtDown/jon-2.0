@@ -1,39 +1,72 @@
-import Metadata from '../../domain/catalog/Metadata';
-import Tags from '../../domain/shared/tag/Tags';
+import { DateTime } from 'luxon';
+import { none, some } from 'fp-ts/Option';
+import CompiledMetadata from '../../domain/sharedkernel/metadata/CompiledMetadata.js';
+import CompiledDate from '../../domain/sharedkernel/metadata/CompiledDate.js';
 
 type CompileMetadataEntity = {
   _id: string;
   fullPath: string;
   tags: string[];
-  destinationFolder: string;
-  year?: number;
-  month?: number;
+  year: number;
+  month: number;
   hasExif: boolean;
-  newName: string;
+  extension: string;
+  type: string;
+  date: {
+    extraite: string | undefined;
+    dateTimeOriginal: string | undefined;
+    dateDictionnaire: string | undefined;
+  };
 };
 
 const mapCompileMetadataEntityToMetadata = (
   entity: CompileMetadataEntity,
-): Metadata => ({
+): CompiledMetadata => ({
   fullPath: entity.fullPath,
-  tags: entity.tags as Tags,
-  destinationFolder: entity.destinationFolder,
+  tags: new Set(entity.tags),
+  year: entity.year,
+  month: entity.month,
   hasExif: entity.hasExif,
-  newName: entity.newName,
+  extension: entity.extension,
+  type: entity.type,
+  date: new CompiledDate(
+    entity.date.extraite ? some(DateTime.fromISO(entity.date.extraite)) : none,
+    entity.date.dateTimeOriginal
+      ? some(DateTime.fromISO(entity.date.dateTimeOriginal))
+      : none,
+    entity.date.dateDictionnaire
+      ? some(DateTime.fromISO(entity.date.dateDictionnaire))
+      : none,
+  ),
 });
 
 const mapCompiledMetadataToCompileMetadataEntity = (
-  metadata: Metadata,
+  compiledMetadata: CompiledMetadata,
 ): CompileMetadataEntity => ({
-  _id: metadata.fullPath,
-  fullPath: metadata.fullPath,
-  tags: metadata.tags,
-  destinationFolder: metadata.destinationFolder,
-  year: metadata.year,
-  month: metadata.month,
-  hasExif: metadata.hasExif,
-  newName: metadata.newName,
+  _id: compiledMetadata.fullPath,
+  fullPath: compiledMetadata.fullPath,
+  tags: Array.from(compiledMetadata.tags),
+  year: compiledMetadata.year,
+  month: compiledMetadata.month,
+  hasExif: compiledMetadata.hasExif,
+  extension: compiledMetadata.extension,
+  type: compiledMetadata.type,
+  date: {
+    extraite: extractOptionalDate(compiledMetadata.date.extraite),
+    dateTimeOriginal: extractOptionalDate(
+      compiledMetadata.date.dateTimeOriginal,
+    ),
+    dateDictionnaire: extractOptionalDate(
+      compiledMetadata.date.dateDictionnaire,
+    ),
+  },
 });
+
+const extractOptionalDate = (option: {
+  _tag: string;
+  value?: DateTime;
+}): string | undefined =>
+  option._tag === 'Some' ? option.value?.toString() : undefined;
 
 export {
   CompileMetadataEntity,

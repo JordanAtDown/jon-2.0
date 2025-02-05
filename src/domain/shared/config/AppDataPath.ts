@@ -2,7 +2,7 @@ import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
 import * as path from 'path';
 import * as os from 'os';
-import { appName } from './Constant';
+import { appName } from './Constant.js';
 
 class AppDataPath {
   private static instance: AppDataPath | null = null;

@@ -1,17 +1,19 @@
 import * as TE from 'fp-ts/TaskEither';
 import { Option } from 'fp-ts/Option';
-import { CheckpointData } from './CheckpointData';
+import { AggregatedCheckpointData, CheckpointData } from './CheckpointData.js';
+
+export type FilterCheckpoint = {
+  id: string;
+};
 
 interface Checkpoint {
-  create(checkpoint: CheckpointData): TE.TaskEither<Error, CheckpointData>;
-  findBy(id: string): TE.TaskEither<Error, Option<CheckpointData>>;
+  save(
+    checkpoint: CheckpointData,
+  ): TE.TaskEither<Error, Option<CheckpointData>>;
+  findBy(id: string): TE.TaskEither<Error, Option<AggregatedCheckpointData>>;
   findCheckpoints(
-    filter: Partial<CheckpointData>,
-  ): TE.TaskEither<Error, Array<CheckpointData>>;
-  update(
-    id: string,
-    newProcessedFiles: Set<string>,
-  ): TE.TaskEither<Error, CheckpointData>;
+    filter: FilterCheckpoint,
+  ): TE.TaskEither<Error, Array<AggregatedCheckpointData>>;
 }
 
 export default Checkpoint;

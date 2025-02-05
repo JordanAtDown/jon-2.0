@@ -1,89 +1,204 @@
 import * as TE from 'fp-ts/TaskEither';
 import * as A from 'fp-ts/Array';
 import { pipe } from 'fp-ts/function';
-import MetadataRepository from '../MetadataRepository';
-import YearMonth from '../YearMonth';
-import Metadata from '../Metadata';
-import OccurenceIdentifier from '../../shared/duplicate/OccurenceIdentifier';
-import Occurrences from '../../shared/duplicate/Occurences';
-import copyFile from '../../shared/filesystem/CopyFile';
-import renameFile from '../../shared/filesystem/RenameFile';
-import applyExifKeywords from '../../shared/exif/ApplyExifKeywords';
+import MetadataRepository, {
+  FilterCompiledMetadata,
+} from '../MetadataRepository.js';
+import CompiledMetadata from '../../sharedkernel/metadata/CompiledMetadata.js';
+import CopyAllFileWithCompileMetadataCommand from './CopyAllFileWithCompileMetadataCommand.js';
+import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
+import buildFilenameWithFormat from '../../shared/filesystem/BuildFilenameWithFormat.js';
+import { buildDirectoryPath } from '../../shared/filesystem/BuildDirectoryPath.js';
+import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
+import ProgressTracker from '../../shared/tracker/ProgressTracker.js';
+import { ExifPropertyBuilder } from '../../shared/exif/ExifProperty.js';
+import {
+  validateDateTime,
+  validateKeywords,
+} from '../../shared/exif/validation/Validations.js';
+import {
+  CategorySource,
+  CheckpointDetails,
+  DefaultCheckpointDataCompiledMetadata,
+  resolveDefaultCheckpoint,
+} from '../../sharedkernel/checkpoint/CheckpointData.js';
+import { DateTime } from 'luxon';
+import { filesystemApply } from '../../shared/filesystem/FilesystemApply.js';
+import { isNone } from 'fp-ts/lib/Option.js';
+import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
+import { NumberPage } from '../../../tests/infra/utils/LokiJSBaseRepository.js';
+import { allPages } from '../../shared/utils/batch/GeneratePageNumbers.js';
 
-class MovingAllFileWithCompileMetadataUseCase {
-  constructor(private readonly compiledMetadataRepository: MetadataRepository) {
+class CopyAllFileWithCompileMetadataUseCase {
+  constructor(
+    private readonly compiledMetadataRepository: MetadataRepository,
+    private readonly checkpoint: Checkpoint,
+  ) {
     this.compiledMetadataRepository = compiledMetadataRepository;
   }
 
-  public copyAllFiles = (): TE.TaskEither<Error, void> => {
+  public copyAllFiles = (
+    command: CopyAllFileWithCompileMetadataCommand,
+  ): TE.TaskEither<Error, void> => {
     return pipe(
-      this.compiledMetadataRepository.getAllUniqueYearsMonths(),
-      TE.chain((yearMonths: YearMonth[]) =>
+      this.checkpoint.findBy(command.idCheckpoint),
+      TE.chain((optionAggrCheckpoint) =>
+        resolveDefaultCheckpoint(
+          optionAggrCheckpoint,
+          DefaultCheckpointDataCompiledMetadata,
+        ),
+      ),
+      TE.chain((checkpointDetails: CheckpointDetails) =>
         pipe(
-          yearMonths,
-          A.map((yearMonth) =>
-            this.processSingleYearMonthBatch(
-              yearMonth,
-              this.compiledMetadataRepository,
+          this.compiledMetadataRepository.getTotalBy({}, command.batchSize),
+          TE.chain((numberPage) =>
+            this.iteratePages(
+              command.destinationDir,
+              numberPage,
+              {},
+              command.batchSize,
+              checkpointDetails,
+              ItemTracker.init(command.itemCallback),
+              ProgressTracker.init(
+                numberPage.totalItem,
+                command.progressCallback,
+              ),
             ),
           ),
-          TE.sequenceSeqArray,
-          TE.map(() => void 0),
         ),
       ),
     );
   };
 
-  private processSingleYearMonthBatch = (
-    yearMonth: YearMonth,
-    metadataRepository: MetadataRepository,
+  private iteratePages(
+    destinationDir: string,
+    numberPage: NumberPage,
+    filter: FilterCompiledMetadata,
+    pageSize: number,
+    checkpointDetails: CheckpointDetails,
+    itemTracker: ItemTracker,
+    progressTracker: ProgressTracker,
+  ): TE.TaskEither<Error, void> {
+    return pipe(
+      allPages(numberPage.totalPages),
+      TE.traverseArray((page) =>
+        this.processPage(
+          destinationDir,
+          filter,
+          page,
+          pageSize,
+          checkpointDetails,
+          itemTracker,
+          progressTracker,
+        ),
+      ),
+      TE.map(() => void 0),
+    );
+  }
+
+  private processPage = (
+    destinationDir: string,
+    filter: FilterCompiledMetadata,
+    pageNumber: number,
+    batchSize: number,
+    checkpointDetails: CheckpointDetails,
+    itemTracker: ItemTracker,
+    progressTracker: ProgressTracker,
   ): TE.TaskEither<Error, void> => {
     return pipe(
-      metadataRepository.findByYearMonth(yearMonth),
-      TE.chain((metadatas) => {
-        const occurrenceManager = this.createOccurrenceManager(metadatas);
+      this.compiledMetadataRepository.getPageBy(filter, pageNumber, batchSize),
+      TE.map((compiledMetadatas) =>
+        compiledMetadatas.filter(
+          (metadata) => !checkpointDetails.processed.has(metadata.fullPath),
+        ),
+      ),
 
-        return this.processAllMetadatas(metadatas, occurrenceManager);
+      TE.chain((compiledMetadatas) => {
+        return this.processAllMetadatas(
+          destinationDir,
+          compiledMetadatas,
+          checkpointDetails,
+          itemTracker,
+          progressTracker,
+        );
       }),
     );
   };
 
-  private createOccurrenceManager = (
-    metadatas: Metadata[],
-  ): OccurenceIdentifier => {
-    const occurrences = metadatas.reduce<Occurrences>((acc, metadata) => {
-      const name = metadata.newName;
-      acc[name] = (acc[name] ?? 0) + 1;
-      return acc;
-    }, {});
-
-    return new OccurenceIdentifier(occurrences);
-  };
-
   private processAllMetadatas = (
-    metadatas: Metadata[],
-    occurenceIdentifier: OccurenceIdentifier,
+    destinationDir: string,
+    metadatas: CompiledMetadata[],
+    checkpointDetails: CheckpointDetails,
+    itemTracker: ItemTracker,
+    progressTracker: ProgressTracker,
   ): TE.TaskEither<Error, void> => {
     return pipe(
       metadatas,
-      A.map((metadata) =>
-        pipe(
-          copyFile(metadata.fullPath, metadata.destinationFolder),
-          TE.chain((filePath) =>
-            renameFile(filePath, metadata.newName, occurenceIdentifier),
-          ),
-          TE.chain(
-            (renamedFilePath) =>
-              applyExifKeywords(renamedFilePath, metadata.tags),
-            // TODO: Apply exif dateTimeOriginal si aucune exif
-          ),
-          TE.map(() => void 0),
-        ),
-      ),
+      A.map((metadata) => {
+        const date = metadata.date.getDate();
+
+        if (isNone(date)) {
+          itemTracker.track(
+            ItemTrackerBuilder.start()
+              .withId(metadata.fullPath)
+              .asNormalItem(ItemState.UNPROCESS),
+          );
+          return TE.right(void 0);
+        }
+
+        const filename = buildFilenameWithFormat(
+          date.value,
+          metadata.extension,
+          metadata.type,
+        );
+        const destinationPath = buildDirectoryPath(
+          destinationDir,
+          date.value,
+          filename,
+        );
+
+        const dateTimeOriginalProperty = new ExifPropertyBuilder<string>(
+          'DateTimeOriginal',
+        )
+          .withValueGetter(() => date.value.toString())
+          .withValidator(validateDateTime)
+          .withErrorMessage(`invalid for ${destinationPath}`)
+          .build();
+        const keywordsProperty = new ExifPropertyBuilder<string[]>('Keywords')
+          .withValueGetter(() => Array.from(metadata.tags))
+          .withValidator(validateKeywords)
+          .withErrorMessage(`invalid for ${destinationPath}`)
+          .build();
+        const exifProperties = [keywordsProperty, dateTimeOriginalProperty];
+
+        const fileSystemApplyCommand = {
+          filepath: metadata.fullPath,
+          destPath: destinationPath,
+          exifProperties: exifProperties,
+          itemTracker: itemTracker,
+        };
+        return pipe(
+          filesystemApply(fileSystemApplyCommand),
+          TE.chain(() => {
+            return pipe(
+              this.checkpoint.save({
+                _id: checkpointDetails.id,
+                category: CategorySource.ID,
+                lastUpdate: DateTime.now(),
+                processed: new Set([metadata.fullPath]),
+                source: checkpointDetails.source,
+              }),
+              TE.map(() => {
+                progressTracker.increment();
+              }),
+            );
+          }),
+        );
+      }),
       TE.sequenceSeqArray,
       TE.map(() => void 0),
     );
   };
 }
 
-export default MovingAllFileWithCompileMetadataUseCase;
+export default CopyAllFileWithCompileMetadataUseCase;

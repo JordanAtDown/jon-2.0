@@ -1,7 +1,5 @@
-import { CheckpointData } from '../../sharedkernel/checkpoint/CheckpointData';
-
 type CheckpointFindCommand = {
-  filter: Partial<CheckpointData>;
+  id: string;
 };
 
 export default CheckpointFindCommand;

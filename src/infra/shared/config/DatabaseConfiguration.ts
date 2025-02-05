@@ -1,28 +1,29 @@
-import Datastore from '@seald-io/nedb';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
+import Loki from 'lokijs';
+import { autosaveInterval } from '../../../domain/shared/config/Constant.js';
 
-const METADATA_DB = 'metadata.db';
+const FILEMETADATA_DB = 'filemetadata.db';
 const METADATA_COMPILE_DB = 'metadata_compile.db';
 const CHECKPOINT_DB = 'checkpoint.db';
 
 export class DatabaseConfiguration {
   private static instance: DatabaseConfiguration | null = null;
 
-  public readonly fileMetadataDB: Datastore;
-  public readonly compiledMetadataDB: Datastore;
-  public readonly checkpointDB: Datastore;
+  public readonly fileMetadataDB: Loki;
+  public readonly compiledMetadataDB: Loki;
+  public readonly checkpointDB: Loki;
 
   private constructor(path: string) {
-    this.fileMetadataDB = this.initDatabase(path, METADATA_DB);
+    this.fileMetadataDB = this.initDatabase(path, FILEMETADATA_DB);
     this.compiledMetadataDB = this.initDatabase(path, METADATA_COMPILE_DB);
     this.checkpointDB = this.initDatabase(path, CHECKPOINT_DB);
   }
 
-  private initDatabase(path: string, filename: string): Datastore {
-    return new Datastore({
-      filename: `${path}${filename}`,
-      autoload: true,
+  private initDatabase(path: string, filename: string): Loki {
+    return new Loki(`${path}${filename}`, {
+      autosave: true,
+      autosaveInterval: autosaveInterval,
     });
   }
 
@@ -42,12 +43,7 @@ export class DatabaseConfiguration {
           }
           return DatabaseConfiguration.instance;
         },
-        (error) =>
-          new Error(
-            `Erreur lors de la création de la configuration des bases de données: ${
-              (error as Error).message
-            }`,
-          ),
+        () => new Error("DATABASE : CAN'T LOAD DATABASE"),
       ),
     );
   }

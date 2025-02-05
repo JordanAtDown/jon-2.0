@@ -2,8 +2,10 @@
   "name": "jon-2.0",
   "version": "0.0.2",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "repository": {
     "type": "git",
@@ -43,10 +45,11 @@
   "homepage": "https://github.com/JordanAtDown/jon-2.0#readme",
   "description": "",
   "dependencies": {
-    "@seald-io/nedb": "^4.0.4",
     "exiftool-vendored": "^29.0.0",
     "fast-glob": "^3.3.3",
     "fp-ts": "^2.16.9",
+    "lokijs": "^1.5.12",
+    "luxon": "^3.5.0",
     "uuid": "^11.0.5"
   },
   "devDependencies": {
@@ -55,6 +58,7 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/github": "^11.0.1",
     "@semantic-release/npm": "^12.0.1",
+    "@types/lokijs": "^1.5.14",
     "@typescript-eslint/eslint-plugin": "^8.19.1",
     "@typescript-eslint/parser": "^8.19.1",
     "@vitest/coverage-v8": "^2.1.8",
@@ -67,6 +71,8 @@
     "prettier": "^3.4.2",
     "semantic-release": "^24.2.1",
     "typescript": "^5.7.3",
+    "vite": "^5.4.14",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^2.1.8"
   },
   "commitlint": {

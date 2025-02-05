@@ -1,4 +1,4 @@
-import { DateExtractor } from './DateExtractor';
+import { DateExtractor } from './DateExtractor.js';
 
 export interface RegexDateExtractor {
   regex: RegExp;

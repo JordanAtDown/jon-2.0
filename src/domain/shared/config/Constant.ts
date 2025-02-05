@@ -6,6 +6,6 @@
  * ===================================================
  */
 const appName: string = 'jon-2.0';
-const fileCheckpoint: string = 'checkpoint';
+const autosaveInterval = 4000;
 
-export { appName, fileCheckpoint };
+export { appName, autosaveInterval };

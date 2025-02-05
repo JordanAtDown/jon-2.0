@@ -119,3 +119,73 @@ export const taskFromNeDB = <T>(
     (reason) => (reason instanceof Error ? reason : new Error(String(reason))),
   );
 };
+
+/**
+ * Filters out keys with `null` or `undefined` values from an object.
+ *
+ * This utility function is generic and preserves the input type. It dynamically
+ * removes any key-value pair where the value is either `null` or `undefined`,
+ * returning a new object with only defined values.
+ *
+ * @template T - Type of the input object, extending `Record<string, unknown>`.
+ *
+ * @param {T} input - The input object to be filtered.
+ * @returns {Partial<T>} - A new object containing only the keys with defined values.
+ *
+ * @example
+ * // Example 1: Simple object filtering
+ * const data = {
+ *   name: 'Alice',
+ *   age: null,
+ *   email: 'alice@example.com',
+ *   isActive: undefined,
+ * };
+ * const filteredData = filterDefinedKeys(data);
+ * console.log(filteredData);
+ * // Output: { name: 'Alice', email: 'alice@example.com' }
+ *
+ * @example
+ * // Example 2: Filtering a typed object (e.g., ExifMetadata)
+ * import { DateTime } from 'luxon';
+ *
+ * type ExifMetadata = {
+ *   dateTimeOriginal?: DateTime;
+ *   GPSLatitude?: number;
+ *   GPSLongitude?: number;
+ *   CameraModel?: string;
+ * };
+ *
+ * const exifData: ExifMetadata = {
+ *   dateTimeOriginal: DateTime.fromISO('2023-11-08T10:34:00'),
+ *   CameraModel: 'Canon EOS 5D',
+ *   GPSLatitude: null, // Ignored
+ *   GPSLongitude: undefined, // Ignored
+ * };
+ *
+ * const filteredExif = filterDefinedKeys(exifData);
+ * console.log(filteredExif);
+ * // Output: { dateTimeOriginal: ..., CameraModel: 'Canon EOS 5D' }
+ *
+ * @example
+ * // Example 3: Generic usage with dynamic objects
+ * const rawObject = {
+ *   key1: 42,
+ *   key2: null,
+ *   key3: 'hello',
+ *   key4: undefined,
+ * };
+ *
+ * const result = filterDefinedKeys(rawObject);
+ * console.log(result);
+ * // Output: { key1: 42, key3: 'hello' }
+ */
+export const filterDefinedKeys = <T extends Record<string, unknown>>(
+  input: T,
+): Partial<T> => {
+  return Object.entries(input).reduce((acc, [key, value]) => {
+    if (value != null) {
+      acc[key as keyof T] = value as T[keyof T];
+    }
+    return acc;
+  }, {} as Partial<T>);
+};
