@@ -4,7 +4,7 @@ import { isLeft } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import * as path from 'path';
 
-class DateDictionaryConfiguration {
+export class DateDictionaryConfiguration {
   private static instance: DateDictionaryConfiguration | null = null;
 
   private static readonly FILE_PATH = path.join(

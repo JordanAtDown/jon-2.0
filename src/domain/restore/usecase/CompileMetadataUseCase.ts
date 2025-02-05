@@ -27,7 +27,7 @@ import { allPages } from '../../shared/utils/batch/GeneratePageNumbers.js';
 import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
 import { DateTime } from 'luxon';
 
-class CompileMetadataUseCase {
+export class CompileMetadataUseCase {
   constructor(
     private readonly fileMetadataRepository: FileMetadataRepository,
     private readonly compiledMetadataRepository: CompiledMetadataRepository,

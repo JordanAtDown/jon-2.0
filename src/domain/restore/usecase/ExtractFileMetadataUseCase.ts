@@ -18,7 +18,7 @@ import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
 import { DateTime } from 'luxon';
 import { CategorySource } from '../../sharedkernel/checkpoint/CheckpointData.js';
 
-class ExtractFileMetadataUseCase {
+export class ExtractFileMetadataUseCase {
   constructor(
     private readonly fileScanner: FileScanner,
     private readonly checkpoint: Checkpoint,

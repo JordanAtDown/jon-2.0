@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { appName } from './Constant.js';
 
-class AppDataPath {
+export class AppDataPath {
   private static instance: AppDataPath | null = null;
   private path: string | null = null;
 
