@@ -1,12 +1,6 @@
 import { describe, it, beforeAll, afterAll, expect } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import {
-  extractExifProperties,
-  writeBase64ImageToFile,
-  base64Image,
-} from 'tests/shared/utils/test/Image.js';
-import { deleteFileOrDirectory } from 'tests/shared/utils/test/Filesystem.js';
 import { ExifPropertyBuilder } from '../../../../domain/shared/exif/ExifProperty.js';
 import exifApplyTo from '../../../../domain/shared/exif/ExifWriting.js';
 import {
@@ -14,6 +8,12 @@ import {
   expectTaskEitherRight,
 } from '../../../shared/utils/test/Expected.js';
 import { ExifDateTime } from 'exiftool-vendored';
+import {
+  base64Image,
+  extractExifProperties,
+  writeBase64ImageToFile,
+} from '../../../shared/utils/test/Image';
+import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem';
 
 const TEST_DIR = path.join(__dirname, 'test-output');
 const TEST_IMAGE_PATH = path.join(TEST_DIR, 'testImage.jpg');

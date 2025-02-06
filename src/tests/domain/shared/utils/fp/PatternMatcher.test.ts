@@ -1,5 +1,8 @@
-import { match, Matcher } from 'domain/shared/utils/fp/PatternMatcher.js';
 import { describe, expect, test } from 'vitest';
+import {
+  match,
+  Matcher,
+} from '../../../../../domain/shared/utils/fp/PatternMatcher.js';
 import {
   expectNone,
   expectSome,

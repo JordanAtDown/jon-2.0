@@ -24,7 +24,7 @@ import DateTimeOriginal from '../../shared/extractor/DateTimeOriginal.js';
 import { filesystemApply } from '../../shared/filesystem/FilesystemApply.js';
 import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
 
-class MoveAndCatalogFileUseCase {
+export class MoveAndCatalogFileUseCase {
   constructor(
     private readonly fileScanner: FileScanner,
     private readonly extractors: Extractor[],

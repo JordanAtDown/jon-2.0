@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { DateTime } from 'luxon';
 import * as O from 'fp-ts/Option';
 import FileMetadata from '../../../domain/sharedkernel/metadata/FileMetadata.js';
-import { expectNone, expectSome } from 'tests/shared/utils/test/Expected.js';
 import CompiledDate from '../../../domain/sharedkernel/metadata/CompiledDate.js';
 import ExifMetadata from '../../../domain/sharedkernel/metadata/ExifMetadata.js';
 import { DateExtractor } from '../../../domain/shared/regex/DateExtractor.js';
+import { expectNone, expectSome } from '../../shared/utils/test/Expected';
 
 describe('FileMetadata', () => {
   describe('should getTags', () => {

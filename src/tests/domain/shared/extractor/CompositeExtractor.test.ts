@@ -7,12 +7,12 @@ import {
   writeBase64ImageToFile,
   writeExifData,
 } from '../../../shared/utils/test/Image.js';
-import { deleteFileOrDirectory } from 'tests/shared/utils/test/Filesystem.js';
-import exif from 'domain/shared/extractor/Exif.js';
-import compositeExtractor from 'domain/shared/extractor/CompositeExtractor.js';
-import { expectRight } from 'tests/shared/utils/test/Expected.js';
-import FileMetadata from 'domain/sharedkernel/metadata/FileMetadata.js';
 import dateTimeOriginal from '../../../../domain/shared/extractor/DateTimeOriginal.js';
+import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem';
+import { expectRight } from '../../../shared/utils/test/Expected';
+import exif from '../../../../domain/shared/extractor/Exif';
+import compositeExtractor from '../../../../domain/shared/extractor/CompositeExtractor';
+import FileMetadata from '../../../../domain/sharedkernel/metadata/FileMetadata';
 
 describe('Composite Extractor', () => {
   const testDir = path.join(__dirname, 'composite_extractor');

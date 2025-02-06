@@ -9,10 +9,6 @@ import {
   FileStructure,
 } from '../../../shared/utils/test/Filesystem.js';
 import { ExifDateTime } from 'exiftool-vendored';
-import initializeDB from 'tests/infra/utils/InitializeDB.js';
-import FastGlobScanner from 'infra/shared/filesystem/FastGlobScanner.js';
-import LokiJSCheckpoint from 'infra/sharedkernel/checkpoint/LokiJSCheckpoint.js';
-import exif from 'domain/shared/extractor/Exif.js';
 import LokiJSFileMetadataRepository from '../../../../infra/restore/LokiJSFileMetadataRepository.js';
 import {
   base64Image,
@@ -22,6 +18,10 @@ import {
 import { FileMetadataEntity } from '../../../../infra/restore/FileMetadataEntity.js';
 import { expectRight } from '../../../shared/utils/test/Expected.js';
 import { validateCheckpointEntity } from '../../../shared/utils/test/Validations.js';
+import initializeDB from '../../../infra/utils/InitializeDB';
+import FastGlobScanner from '../../../../infra/shared/filesystem/FastGlobScanner';
+import { LokiJSCheckpoint } from '../../../../index';
+import exif from '../../../../domain/shared/extractor/Exif';
 
 describe('ExtractFileMetadataUseCase', () => {
   const tempDir = path.join(__dirname, 'metadata_extraction');

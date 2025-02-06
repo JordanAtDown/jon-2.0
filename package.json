@@ -4,8 +4,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "repository": {
     "type": "git",
@@ -71,8 +70,8 @@
     "prettier": "^3.4.2",
     "semantic-release": "^24.2.1",
     "typescript": "^5.7.3",
-    "vite": "^5.4.14",
     "vite-tsconfig-paths": "^5.1.4",
+    "vite": "^5.4.14",
     "vitest": "^2.1.8"
   },
   "commitlint": {

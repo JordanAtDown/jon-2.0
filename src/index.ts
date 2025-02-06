@@ -1,3 +1,6 @@
+export { default as MoveAndCatalogFileUseCase } from './domain/catalog/usecase/MoveAndCatalogFileUseCase.js';
+export { default as MoveAndCatalogFileCommand } from './domain/catalog/usecase/MoveAndCatalogFileCommand.js';
+
 export { default as LokiJSMetadataRepository } from './infra/catalog/LokiJSMetadataRepository.js';
 export { default as LokiJSFileMetadataRepository } from './infra/restore/LokiJSFileMetadataRepository.js';
 export { default as LokiJSompiledMetadataRepository } from './infra/restore/LokiJSompiledMetadataRepository.js';
@@ -12,7 +15,6 @@ export {
   Progress,
   ProgressCallback,
 } from './domain/shared/tracker/Progress.js';
-export { AppDataPath } from './domain/shared/config/AppDataPath.js';
 export { default as ExtractFileMetadataUseCase } from './domain/restore/usecase/ExtractFileMetadataUseCase.js';
 export { default as ExtractFileMetadataCommand } from './domain/restore/usecase/ExtractFileMetadataCommand.js';
 export { CompileMetadataUseCaseCommand } from './domain/restore/usecase/CompileMetadataUseCaseCommand.js';

@@ -1,18 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as path from 'path';
 import { ExifDateTime } from 'exiftool-vendored';
-import {
-  createFileStructure,
-  deleteFileOrDirectory,
-  FileStructure,
-  findFiles,
-} from 'tests/shared/utils/test/Filesystem.js';
-import {
-  base64Image,
-  extractExifProperties,
-  writeBase64ImageToFile,
-  writeExifData,
-} from 'tests/shared/utils/test/Image.js';
 import MoveAndCatalogFileUseCase from '../../../domain/catalog/usecase/MoveAndCatalogFileUseCase.js';
 import fastGlobScanner from '../../../infra/shared/filesystem/FastGlobScanner.js';
 import MoveAndCatalogFileCommand from '../../../domain/catalog/usecase/MoveAndCatalogFileCommand.js';
@@ -20,6 +8,18 @@ import {
   expectTaskEitherLeft,
   expectTaskEitherRight,
 } from '../../shared/utils/test/Expected.js';
+import {
+  base64Image,
+  extractExifProperties,
+  writeBase64ImageToFile,
+  writeExifData,
+} from '../../shared/utils/test/Image';
+import {
+  createFileStructure,
+  deleteFileOrDirectory,
+  FileStructure,
+  findFiles,
+} from '../../shared/utils/test/Filesystem';
 
 describe('MoveAndCatalogFileUseCase', () => {
   const tempDir = path.join(__dirname, 'MoveAndCatalogFileUseCase');

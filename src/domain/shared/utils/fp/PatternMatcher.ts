@@ -1,7 +1,7 @@
 import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 
-type Matcher<T, R> = [
+export type Matcher<T, R> = [
   matchWhen: (value: T) => boolean,
   result: (value: T) => R,
 ];
@@ -36,7 +36,7 @@ type Matcher<T, R> = [
  * console.log(matchValue(3));  // Output: O.some('3 is less than 5')
  * console.log(matchValue(7));  // Output: O.none
  */
-const match =
+export const match =
   <T, R>(...matchers: Matcher<T, R>[]): ((value: T) => O.Option<R>) =>
   (value: T): O.Option<R> =>
     value == null
@@ -46,5 +46,3 @@ const match =
           O.fromNullable,
           O.map(([_, result]) => result(value)),
         );
-
-export { match, Matcher };

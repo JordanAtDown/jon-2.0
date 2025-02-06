@@ -1,4 +1,3 @@
-import { ExifPropertyBuilder } from 'domain/shared/exif/ExifProperty.js';
 import { describe, it, expect } from 'vitest';
 import {
   validateDateTime,
@@ -7,6 +6,7 @@ import {
   validateNotEmpty,
   validateNumericRange,
 } from '../../../../../domain/shared/exif/validation/Validations.js';
+import { ExifPropertyBuilder } from '../../../../../domain/shared/exif/ExifProperty';
 
 describe('validateExifProperties', () => {
   it('should return no validation errors for valid properties', () => {

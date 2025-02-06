@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import path from 'path';
 import LokiJSCheckpoint from '../../../../infra/sharedkernel/checkpoint/LokiJSCheckpoint.js';
-import { deleteFileOrDirectory } from 'tests/shared/utils/test/Filesystem.js';
 import {
   expectSome,
   expectTaskEitherRight,
@@ -13,6 +12,7 @@ import {
 import CheckpointDBHelper from '../../utils/CheckpointDBHelper.js';
 import initializeDB from '../../utils/InitializeDB.js';
 import { DateTime } from 'luxon';
+import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem';
 
 describe('LokiJSCheckpoint', () => {
   const tempDir = path.join(__dirname, 'lokijscheckpoint');

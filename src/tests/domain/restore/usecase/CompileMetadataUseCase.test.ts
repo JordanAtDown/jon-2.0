@@ -5,10 +5,8 @@ import CheckpointDBHelper from '../../../infra/utils/CheckpointDBHelper.js';
 import CompiledMetadataDBHelper from '../../../infra/utils/CompiledMetadataDBHelper.js';
 import FileMetadataDBHelper from '../../../infra/utils/FileMetadataDDBHelper.js';
 import initializeDB from '../../../infra/utils/InitializeDB.js';
-import LokiJSCheckpoint from 'infra/sharedkernel/checkpoint/LokiJSCheckpoint.js';
 import LokiJSFileMetadataRepository from '../../../../infra/restore/LokiJSFileMetadataRepository.js';
 import LokiJSompiledMetadataRepository from '../../../../infra/restore/LokiJSompiledMetadataRepository.js';
-import HashTagGenerator from 'infra/shared/tag/HashTagGenerator.js';
 import HashDateGenerator from '../../../../infra/shared/tag/HashDateGenerator.js';
 import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem.js';
 import { CompileMetadataUseCaseCommand } from '../../../../domain/restore/usecase/CompileMetadataUseCaseCommand.js';
@@ -18,6 +16,8 @@ import {
 } from '../../../shared/utils/test/Expected.js';
 import { DateTime } from 'luxon';
 import { validateCheckpointEntity } from '../../../shared/utils/test/Validations.js';
+import LokiJSCheckpoint from '../../../../infra/sharedkernel/checkpoint/LokiJSCheckpoint';
+import HashTagGenerator from '../../../../infra/shared/tag/HashTagGenerator';
 
 describe('CompileMetadataUseCase', () => {
   const tempDir = path.join(__dirname, 'compile_metadata_usecase');
