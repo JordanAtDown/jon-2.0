@@ -1,5 +1,5 @@
-import * as TE from 'fp-ts/TaskEither';
-import { pipe } from 'fp-ts/function';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { tryCatchTask } from '../utils/fp/FP.js';

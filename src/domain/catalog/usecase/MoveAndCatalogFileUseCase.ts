@@ -1,28 +1,28 @@
-import * as TE from 'fp-ts/TaskEither';
-import * as A from 'fp-ts/Array';
-import { pipe } from 'fp-ts/function';
-import * as O from 'fp-ts/Option';
-import { Option } from 'fp-ts/Option';
-import FileScanner from 'domain/shared/filesystem/FileScanner.js';
-import Extractor from 'domain/shared/extractor/Extractor.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as A from 'fp-ts/lib/Array.js';
+import { pipe } from 'fp-ts/lib/function.js';
+import * as O from 'fp-ts/lib/Option.js';
+import { Option } from 'fp-ts/lib/Option.js';
 import MoveAndCatalogFileCommand from './MoveAndCatalogFileCommand.js';
 import buildPatterns from '../../shared/filesystem/BuildPattern.js';
 import { batchArray } from '../../shared/utils/batch/BatchArray.js';
-import ProgressTracker from 'domain/shared/tracker/ProgressTracker.js';
-import { ItemState, ItemTracker } from 'domain/shared/tracker/ItemTracker.js';
 import safeExtract from '../../shared/extractor/SafeExtract.js';
-import compositeExtractor from 'domain/shared/extractor/CompositeExtractor.js';
 import FileMetadata from '../../sharedkernel/metadata/FileMetadata.js';
 import { extractDate } from '../../shared/regex/ExtractDate.js';
 import routes from '../../shared/regex/Routes.js';
 import DateMetadata from '../../sharedkernel/metadata/DateMetadata.js';
-import buildFilenameWithFormat from 'domain/shared/filesystem/BuildFilenameWithFormat.js';
 import { buildDirectoryPath } from '../../shared/filesystem/BuildDirectoryPath.js';
 import { ExifPropertyBuilder } from '../../shared/exif/ExifProperty.js';
 import { validateDateTime } from '../../shared/exif/validation/Validations.js';
 import DateTimeOriginal from '../../shared/extractor/DateTimeOriginal.js';
 import { filesystemApply } from '../../shared/filesystem/FilesystemApply.js';
 import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
+import FileScanner from '../../shared/filesystem/FileScanner';
+import Extractor from '../../shared/extractor/Extractor';
+import ProgressTracker from '../../shared/tracker/ProgressTracker';
+import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker';
+import compositeExtractor from '../../shared/extractor/CompositeExtractor';
+import buildFilenameWithFormat from '../../shared/filesystem/BuildFilenameWithFormat';
 
 export class MoveAndCatalogFileUseCase {
   constructor(

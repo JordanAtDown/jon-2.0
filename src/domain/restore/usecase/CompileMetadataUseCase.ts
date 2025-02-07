@@ -1,7 +1,6 @@
-import * as TE from 'fp-ts/TaskEither';
-import { pipe } from 'fp-ts/function';
-import * as O from 'fp-ts/Option';
-import { fold } from 'fp-ts/Option';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import { pipe } from 'fp-ts/lib/function.js';
+import { fold } from 'fp-ts/lib/Option.js';
 import {
   CategorySource,
   CheckpointDetails,
@@ -12,10 +11,8 @@ import FileMetadataRepository, {
   FilterFileMetadata,
 } from '../FileMetadataRepository.js';
 import { CompiledMetadataRepository } from '../CompiledMetadataRepository.js';
-import DateGenerator from 'domain/shared/tag/DateGenerator.js';
 import TagsGenerator from '../../shared/tag/TagsGenerator.js';
 import { CompileMetadataUseCaseCommand } from './CompileMetadataUseCaseCommand.js';
-import { ItemState, ItemTracker } from 'domain/shared/tracker/ItemTracker.js';
 import ProgressTracker from '../../shared/tracker/ProgressTracker.js';
 import FileMetadata from '../../sharedkernel/metadata/FileMetadata.js';
 import { extractDate } from '../../shared/regex/ExtractDate.js';
@@ -26,6 +23,8 @@ import CompiledDate from '../../sharedkernel/metadata/CompiledDate.js';
 import { allPages } from '../../shared/utils/batch/GeneratePageNumbers.js';
 import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
 import { DateTime } from 'luxon';
+import DateGenerator from '../../shared/tag/DateGenerator';
+import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker';
 
 export class CompileMetadataUseCase {
   constructor(

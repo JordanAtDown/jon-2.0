@@ -1,7 +1,7 @@
-import * as TE from 'fp-ts/TaskEither';
-import * as O from 'fp-ts/Option';
-import { Option } from 'fp-ts/Option';
-import { pipe } from 'fp-ts/function';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as O from 'fp-ts/lib/Option.js';
+import { Option } from 'fp-ts/lib/Option.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import { LokiJSBaseRepository } from '../../../tests/infra/utils/LokiJSBaseRepository.js';
 import CheckpointEntity, {
   mapCheckpointDataToEntity,
@@ -18,6 +18,7 @@ import {
   aggregateCheckpoints,
   aggregateCheckpointsEntitiesWithFilter,
 } from './Aggregation.js';
+import { DateTime } from 'luxon';
 
 const checkpoint = 'checkpoint';
 
@@ -54,6 +55,9 @@ export class LokiJSCheckpoint
         processed: entity.processed,
       }),
       (entities) => aggregateCheckpointsEntitiesWithFilter(entities, filter),
+      (a, b) =>
+        DateTime.fromISO(b.lastUpdate).toMillis() -
+        DateTime.fromISO(a.lastUpdate).toMillis(),
     );
   }
 }

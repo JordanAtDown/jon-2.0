@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import { ExifDateTime, exiftool } from 'exiftool-vendored';
 import { tryCatchTask } from '../../../../domain/shared/utils/fp/FP.js';
-import { pipe } from 'fp-ts/function';
-import * as TE from 'fp-ts/TaskEither';
+import { pipe } from 'fp-ts/lib/function.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 
 /**
  * Base64 representing a minimal JPEG image.

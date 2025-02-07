@@ -1,6 +1,6 @@
-import * as TE from 'fp-ts/TaskEither';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 import Loki from 'lokijs';
-import { pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/lib/function.js';
 import { LokiJSBaseRepository } from '../../tests/infra/utils/LokiJSBaseRepository.js';
 import {
   FileMetadataEntity,
@@ -10,7 +10,7 @@ import {
 import FileMetadataRepository, {
   FilterFileMetadata,
 } from '../../domain/restore/FileMetadataRepository.js';
-import FileMetadata from 'domain/sharedkernel/metadata/FileMetadata.js';
+import FileMetadata from '../../domain/sharedkernel/metadata/FileMetadata';
 
 const fileMetadata = 'file_metadata';
 

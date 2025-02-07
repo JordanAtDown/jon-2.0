@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
-import * as TE from 'fp-ts/TaskEither';
-import * as Either from 'fp-ts/Either';
-import { pipe } from 'fp-ts/function';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as Either from 'fp-ts/lib/Either.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import fg from 'fast-glob';
 import FileScanner from '../../../domain/shared/filesystem/FileScanner.js';
 import { tryCatchTask } from '../../../domain/shared/utils/fp/FP.js';

@@ -1,6 +1,6 @@
 import Loki, { Collection } from 'lokijs';
-import { fromNullable, Option } from 'fp-ts/Option';
-import { TaskEither } from 'fp-ts/TaskEither';
+import { fromNullable, Option } from 'fp-ts/lib/Option.js';
+import { TaskEither } from 'fp-ts/lib/TaskEither.js';
 import { tryCatchTask } from '../../../domain/shared/utils/fp/FP.js';
 
 export type NumberPage = {
@@ -127,9 +127,12 @@ export abstract class LokiJSBaseRepository<ENTITY extends Object> {
   aggregate<MAPPED, AGGREGATED>(
     mapFn: (entity: ENTITY) => MAPPED,
     reduceFn: (mapped: MAPPED[]) => AGGREGATED,
+    sortFn?: (a: MAPPED, b: MAPPED) => number,
   ): TaskEither<Error, AGGREGATED> {
     return tryCatchTask(async () => {
-      return this.collection.mapReduce(mapFn, reduceFn);
+      const mappedData = this.collection.data.map(mapFn);
+      const sortedData = sortFn ? mappedData.sort(sortFn) : mappedData;
+      return reduceFn(sortedData);
     });
   }
 }

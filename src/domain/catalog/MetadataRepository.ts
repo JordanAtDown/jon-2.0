@@ -1,4 +1,4 @@
-import * as TE from 'fp-ts/TaskEither';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 import YearMonth from '../sharedkernel/metadata/YearMonth.js';
 import CompiledMetadata from '../sharedkernel/metadata/CompiledMetadata.js';
 import { NumberPage } from '../../tests/infra/utils/LokiJSBaseRepository.js';

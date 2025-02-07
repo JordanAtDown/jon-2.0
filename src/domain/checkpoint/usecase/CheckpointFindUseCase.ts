@@ -1,4 +1,4 @@
-import * as TE from 'fp-ts/TaskEither';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 import CheckpointFindCommand from './CheckpointFindCommand.js';
 import { CheckpointData } from '../../sharedkernel/checkpoint/CheckpointData.js';
 import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
@@ -13,7 +13,11 @@ export class CheckpointFindUseCase {
   public find(
     command: CheckpointFindCommand,
   ): TE.TaskEither<Error, Array<CheckpointData>> {
-    return this.checkpoint.findCheckpoints({ id: command.id });
+    return this.checkpoint.findCheckpoints({
+      id: command.id,
+      category: command.category,
+      source: command.source,
+    });
   }
 }
 

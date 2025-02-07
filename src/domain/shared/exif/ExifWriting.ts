@@ -1,6 +1,6 @@
 import { ExifProperty, ExifValue } from './ExifProperty.js';
-import * as TE from 'fp-ts/TaskEither';
-import { pipe } from 'fp-ts/function';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import { exiftool } from 'exiftool-vendored';
 
 const createExifData = (

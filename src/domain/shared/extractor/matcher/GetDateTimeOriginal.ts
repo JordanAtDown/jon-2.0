@@ -1,7 +1,7 @@
 import { ExifDateTime } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
-import { pipe } from 'fp-ts/function';
-import { match } from 'fp-ts/Option';
+import { pipe } from 'fp-ts/lib/function.js';
+import { match } from 'fp-ts/lib/Option.js';
 import { matchDateTimeOriginal } from './MatchDateTimeOriginal.js';
 
 const getDateTimeOriginal = (

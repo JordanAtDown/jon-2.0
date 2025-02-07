@@ -1,6 +1,6 @@
 import path from 'path';
-import { pipe } from 'fp-ts/function';
-import * as O from 'fp-ts/Option';
+import { pipe } from 'fp-ts/lib/function.js';
+import * as O from 'fp-ts/lib/Option.js';
 import { DateTime } from 'luxon';
 
 const buildDirectoryPath = (

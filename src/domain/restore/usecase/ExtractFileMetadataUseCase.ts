@@ -1,15 +1,10 @@
-import * as TE from 'fp-ts/TaskEither';
-import * as O from 'fp-ts/Option';
-import { fold, Option } from 'fp-ts/Option';
-import { pipe } from 'fp-ts/function';
-import FileScanner from 'domain/shared/filesystem/FileScanner.js';
-import Extractor from 'domain/shared/extractor/Extractor.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as O from 'fp-ts/lib/Option.js';
+import { fold, Option } from 'fp-ts/lib/Option.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import FileMetadataRepository from '../FileMetadataRepository.js';
 import ExtractFileMetadataCommand from './ExtractFileMetadataCommand.js';
-import ProgressTracker from 'domain/shared/tracker/ProgressTracker.js';
 import { ItemTracker } from '../../shared/tracker/ItemTracker.js';
-import { batchArray } from 'domain/shared/utils/batch/BatchArray.js';
-import buildPatterns from 'domain/shared/filesystem/BuildPattern.js';
 import { filterItems } from '../../shared/utils/fp/FP.js';
 import FileMetadata from '../../sharedkernel/metadata/FileMetadata.js';
 import safeExtract from '../../shared/extractor/SafeExtract.js';
@@ -17,6 +12,11 @@ import compositeExtractor from '../../shared/extractor/CompositeExtractor.js';
 import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
 import { DateTime } from 'luxon';
 import { CategorySource } from '../../sharedkernel/checkpoint/CheckpointData.js';
+import FileScanner from '../../shared/filesystem/FileScanner';
+import Extractor from '../../shared/extractor/Extractor';
+import ProgressTracker from '../../shared/tracker/ProgressTracker';
+import { batchArray } from '../../shared/utils/batch/BatchArray';
+import buildPatterns from '../../shared/filesystem/BuildPattern';
 
 export class ExtractFileMetadataUseCase {
   constructor(
@@ -92,6 +92,7 @@ export class ExtractFileMetadataUseCase {
     (allFiles: string[]): TE.TaskEither<Error, string[]> =>
       pipe(
         this.checkpoint.findBy(idCheckpoint),
+        // TODO: Ajouter la méthode de resolveDefaultCheckpoint
         TE.map(
           fold(
             () => [],

@@ -1,5 +1,5 @@
-import * as O from 'fp-ts/Option';
-import { pipe } from 'fp-ts/function';
+import * as O from 'fp-ts/lib/Option.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import { DateTime } from 'luxon';
 import { RegexDateExtractor } from './RegexDateExtractor.js';
 

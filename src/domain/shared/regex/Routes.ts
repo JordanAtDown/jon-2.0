@@ -1,7 +1,7 @@
-import * as O from 'fp-ts/Option';
+import * as O from 'fp-ts/lib/Option.js';
 import { DateTime } from 'luxon';
 import { RegexDateExtractor } from './RegexDateExtractor.js';
-import { pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/lib/function.js';
 import { DateExtractor } from './DateExtractor.js';
 
 const createRoute = (

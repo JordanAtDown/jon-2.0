@@ -1,4 +1,4 @@
-import * as TE from 'fp-ts/TaskEither';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 
 /**
  * Wraps a promise in a `TaskEither` to handle success and errors.

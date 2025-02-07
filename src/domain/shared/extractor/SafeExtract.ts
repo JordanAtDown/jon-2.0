@@ -1,7 +1,7 @@
-import * as TE from 'fp-ts/TaskEither';
-import { Task } from 'fp-ts/Task';
-import { none, Option, some } from 'fp-ts/Option';
-import { pipe } from 'fp-ts/function';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import { Task } from 'fp-ts/lib/Task.js';
+import { none, Option, some } from 'fp-ts/lib/Option.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import FileMetadata from '../../sharedkernel/metadata/FileMetadata.js';
 import { ItemState, ItemTracker } from '../tracker/ItemTracker.js';
 import { ItemTrackerBuilder } from '../tracker/ItemTrackBuilder.js';

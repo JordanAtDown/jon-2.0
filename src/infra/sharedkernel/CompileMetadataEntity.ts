@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { none, some } from 'fp-ts/Option';
+import { none, some } from 'fp-ts/lib/Option.js';
 import CompiledMetadata from '../../domain/sharedkernel/metadata/CompiledMetadata.js';
 import CompiledDate from '../../domain/sharedkernel/metadata/CompiledDate.js';
 

@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
-import * as TE from 'fp-ts/TaskEither';
-import { isLeft } from 'fp-ts/Either';
-import { pipe } from 'fp-ts/function';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import { isLeft } from 'fp-ts/lib/Either.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import * as path from 'path';
 
 export class DateDictionaryConfiguration {

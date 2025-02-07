@@ -1,6 +1,6 @@
-import * as TE from 'fp-ts/TaskEither';
-import * as A from 'fp-ts/Array';
-import { pipe } from 'fp-ts/function';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as A from 'fp-ts/lib/Array.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import MetadataRepository, {
   FilterCompiledMetadata,
 } from '../MetadataRepository.js';

@@ -1,6 +1,6 @@
-import { match, Matcher } from 'domain/shared/utils/fp/PatternMatcher.js';
 import { ExifDateTime } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
+import { match, Matcher } from '../../utils/fp/PatternMatcher';
 
 const isString: Matcher<string | ExifDateTime, DateTime> = [
   (value) => typeof value === 'string',

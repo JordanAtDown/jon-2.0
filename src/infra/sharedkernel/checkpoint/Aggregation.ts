@@ -1,7 +1,7 @@
-import { Semigroup } from 'fp-ts/Semigroup';
-import { pipe } from 'fp-ts/function';
-import { fold, none, Option, some } from 'fp-ts/Option';
-import Array from 'fp-ts/Array';
+import { Semigroup } from 'fp-ts/lib/Semigroup.js';
+import { pipe } from 'fp-ts/lib/function.js';
+import { fold, none, Option, some } from 'fp-ts/lib/Option.js';
+import Array from 'fp-ts/lib/Array.js';
 import { DateTime } from 'luxon';
 import {
   AggregatedCheckpointData,
@@ -43,13 +43,32 @@ export const aggregateCheckpoints = (
     ),
   );
 
+const isMatching = (
+  entity: CheckpointEntity,
+  filter: FilterCheckpoint,
+): boolean => {
+  const matchesId = filter.id ? entity._id === filter.id : true;
+  const matchesCategory = filter.category
+    ? entity.category === filter.category
+    : true;
+  const matchesSource = filter.source ? entity.source === filter.source : true;
+
+  return matchesId && matchesCategory && matchesSource;
+};
+
+const filterEntitiesByCheckpoint = (
+  entities: CheckpointEntity[],
+  filter: FilterCheckpoint,
+): CheckpointEntity[] => {
+  return entities.filter((entity) => isMatching(entity, filter));
+};
+
 export const aggregateCheckpointsEntitiesWithFilter = (
   entities: CheckpointEntity[],
   filter: FilterCheckpoint,
 ): Array<AggregatedCheckpointData> =>
   pipe(
-    entities,
-    Array.filter((entity) => entity._id === filter.id),
+    filterEntitiesByCheckpoint(entities, filter),
     Array.map(entityToAggregatedCheckpoint),
     Array.reduce([] as AggregatedCheckpointData[], (acc, curr) =>
       pipe(

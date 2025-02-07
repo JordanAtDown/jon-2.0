@@ -1,8 +1,8 @@
-import * as O from 'fp-ts/Option';
-import { fromNullable, isNone, none, Option, some } from 'fp-ts/Option';
-import { pipe } from 'fp-ts/function';
+import * as O from 'fp-ts/lib/Option.js';
+import { fromNullable, isNone, none, Option, some } from 'fp-ts/lib/Option.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import path from 'path';
-import { filter, map } from 'fp-ts/Array';
+import { filter, map } from 'fp-ts/lib/Array.js';
 import ExifMetadata from './ExifMetadata.js';
 import { DateExtractor } from '../../shared/regex/DateExtractor.js';
 import DateMetadata from './DateMetadata.js';

@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
-import { pipe } from 'fp-ts/function';
-import { filter, fromNullable, map, Option } from 'fp-ts/Option';
+import { pipe } from 'fp-ts/lib/function.js';
+import { filter, fromNullable, map, Option } from 'fp-ts/lib/Option.js';
 import DateGenerator from '../../../domain/shared/tag/DateGenerator.js';
 
 class HashDateGenerator implements DateGenerator {

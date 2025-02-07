@@ -1,6 +1,6 @@
-import { Option, none, alt, map } from 'fp-ts/Option';
+import { Option, none, alt, map } from 'fp-ts/lib/Option.js';
 import { DateTime } from 'luxon';
-import { pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/lib/function.js';
 import YearMonth from './YearMonth.js';
 
 class CompiledDate {

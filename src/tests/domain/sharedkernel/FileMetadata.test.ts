@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DateTime } from 'luxon';
-import * as O from 'fp-ts/Option';
+import * as O from 'fp-ts/lib/Option.js';
 import FileMetadata from '../../../domain/sharedkernel/metadata/FileMetadata.js';
 import CompiledDate from '../../../domain/sharedkernel/metadata/CompiledDate.js';
 import ExifMetadata from '../../../domain/sharedkernel/metadata/ExifMetadata.js';

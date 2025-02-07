@@ -1,9 +1,11 @@
-import * as TE from 'fp-ts/TaskEither';
-import { Option } from 'fp-ts/Option';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import { Option } from 'fp-ts/lib/Option.js';
 import { AggregatedCheckpointData, CheckpointData } from './CheckpointData.js';
 
 export type FilterCheckpoint = {
-  id: string;
+  id?: string;
+  category?: string;
+  source?: string;
 };
 
 interface Checkpoint {
