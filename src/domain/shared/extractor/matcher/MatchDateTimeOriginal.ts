@@ -1,6 +1,6 @@
 import { ExifDateTime } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
-import { match, Matcher } from '../../utils/fp/PatternMatcher';
+import { match, Matcher } from '../../utils/fp/PatternMatcher.js';
 
 const isString: Matcher<string | ExifDateTime, DateTime> = [
   (value) => typeof value === 'string',

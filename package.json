@@ -1,8 +1,9 @@
 {
   "name": "jon-2.0",
   "version": "0.0.2",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "bin": {
+    "jon2.0": "./dist/cli.js"
+  },
   "files": [
     "dist"
   ],
@@ -44,12 +45,14 @@
   "homepage": "https://github.com/JordanAtDown/jon-2.0#readme",
   "description": "",
   "dependencies": {
+    "commander": "^13.1.0",
     "exiftool-vendored": "^29.0.0",
     "fast-glob": "^3.3.3",
     "fp-ts": "^2.16.9",
     "lokijs": "^1.5.12",
     "luxon": "^3.5.0",
-    "uuid": "^11.0.5"
+    "uuid": "^11.0.5",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
@@ -70,8 +73,8 @@
     "prettier": "^3.4.2",
     "semantic-release": "^24.2.1",
     "typescript": "^5.7.3",
-    "vite-tsconfig-paths": "^5.1.4",
     "vite": "^5.4.14",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^2.1.8"
   },
   "commitlint": {

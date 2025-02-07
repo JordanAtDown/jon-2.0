@@ -20,8 +20,8 @@ import { expectRight } from '../../../shared/utils/test/Expected.js';
 import { validateCheckpointEntity } from '../../../shared/utils/test/Validations.js';
 import initializeDB from '../../../infra/utils/InitializeDB';
 import FastGlobScanner from '../../../../infra/shared/filesystem/FastGlobScanner';
-import { LokiJSCheckpoint } from '../../../../index';
 import exif from '../../../../domain/shared/extractor/Exif';
+import LokiJSCheckpoint from '../../../../infra/sharedkernel/checkpoint/LokiJSCheckpoint';
 
 describe('ExtractFileMetadataUseCase', () => {
   const tempDir = path.join(__dirname, 'metadata_extraction');

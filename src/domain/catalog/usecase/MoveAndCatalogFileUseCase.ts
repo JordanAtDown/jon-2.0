@@ -17,12 +17,12 @@ import { validateDateTime } from '../../shared/exif/validation/Validations.js';
 import DateTimeOriginal from '../../shared/extractor/DateTimeOriginal.js';
 import { filesystemApply } from '../../shared/filesystem/FilesystemApply.js';
 import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
-import FileScanner from '../../shared/filesystem/FileScanner';
-import Extractor from '../../shared/extractor/Extractor';
-import ProgressTracker from '../../shared/tracker/ProgressTracker';
-import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker';
-import compositeExtractor from '../../shared/extractor/CompositeExtractor';
-import buildFilenameWithFormat from '../../shared/filesystem/BuildFilenameWithFormat';
+import FileScanner from '../../shared/filesystem/FileScanner.js';
+import Extractor from '../../shared/extractor/Extractor.js';
+import ProgressTracker from '../../shared/tracker/ProgressTracker.js';
+import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
+import compositeExtractor from '../../shared/extractor/CompositeExtractor.js';
+import buildFilenameWithFormat from '../../shared/filesystem/BuildFilenameWithFormat.js';
 
 export class MoveAndCatalogFileUseCase {
   constructor(
