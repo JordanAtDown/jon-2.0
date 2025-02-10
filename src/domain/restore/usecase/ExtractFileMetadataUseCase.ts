@@ -12,11 +12,13 @@ import compositeExtractor from '../../shared/extractor/CompositeExtractor.js';
 import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
 import { DateTime } from 'luxon';
 import { CategorySource } from '../../sharedkernel/checkpoint/CheckpointData.js';
-import FileScanner from '../../shared/filesystem/FileScanner';
-import Extractor from '../../shared/extractor/Extractor';
-import ProgressTracker from '../../shared/tracker/ProgressTracker';
-import { batchArray } from '../../shared/utils/batch/BatchArray';
-import buildPatterns from '../../shared/filesystem/BuildPattern';
+import FileScanner from '../../shared/filesystem/FileScanner.js';
+import Extractor from '../../shared/extractor/Extractor.js';
+import ProgressTracker from '../../shared/tracker/ProgressTracker.js';
+import { batchArray } from '../../shared/utils/batch/BatchArray.js';
+import buildPatterns from '../../shared/filesystem/BuildPattern.js';
+import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
+import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
 
 export class ExtractFileMetadataUseCase {
   constructor(
@@ -47,8 +49,12 @@ export class ExtractFileMetadataUseCase {
         command.idCheckpoint,
       ),
       TE.map((files) => {
-        const progress = ProgressTracker.init(files.length, command.progress);
-        const itemTracker = ItemTracker.init(command.itemCallback);
+        const progress = new WrapperMutableProgressTracker(
+          ProgressTracker.init(files.length, command.progress),
+        );
+        const itemTracker = new WrapperMutableItemTracker(
+          ItemTracker.init(command.itemCallback),
+        );
         const batches = batchArray(files, command.batchSize);
         return { batches, progress, itemTracker: itemTracker };
       }),
@@ -104,8 +110,8 @@ export class ExtractFileMetadataUseCase {
 
   private processBatches = (
     batches: string[][],
-    progress: ProgressTracker,
-    itemTracker: ItemTracker,
+    progress: WrapperMutableProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
     idCheckpoint: string,
     rootDir: string,
   ): TE.TaskEither<Error, void> => {
@@ -120,8 +126,8 @@ export class ExtractFileMetadataUseCase {
   private processBatch = (
     batch: string[],
     rootDir: string,
-    progress: ProgressTracker,
-    itemTracker: ItemTracker,
+    progress: WrapperMutableProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
     idCheckpoint: string,
   ): TE.TaskEither<Error, void> => {
     return pipe(
@@ -150,8 +156,8 @@ export class ExtractFileMetadataUseCase {
 
   private processFile = (
     filePath: string,
-    progress: ProgressTracker,
-    itemTracker: ItemTracker,
+    progress: WrapperMutableProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, Option<FileMetadata>> => {
     return pipe(
       safeExtract(compositeExtractor(this.extractors), filePath, itemTracker),

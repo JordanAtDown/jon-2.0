@@ -1,3 +1,5 @@
+import EXTENSIONS from './Extensions.js';
+
 /**
  * Builds glob patterns for Fast Glob from a dictionary of extensions.
  *
@@ -7,9 +9,6 @@
  * Example input: ["MP4", "JPG/JPEG"]
  * Example output: ["**/ /*.mp4", "**/ /*.jpg", "**/ /*.jpeg"]
  */
-
-import EXTENSIONS from './Extensions.js';
-
 const buildPatterns = (keys: string[]): string[] => {
   return keys
     .flatMap((key) => EXTENSIONS[key] || [])

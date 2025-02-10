@@ -1,18 +1,19 @@
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import { pipe } from 'fp-ts/lib/function.js';
-import moveFile, { canMove } from './MoveFile.js';
+import moveFile from './MoveFile.js';
 import { ExifProperty } from '../exif/ExifProperty.js';
 import { Either, right, left } from 'fp-ts/lib/Either.js';
-import { ItemState, ItemTracker } from '../tracker/ItemTracker.js';
+import { ItemState } from '../tracker/ItemTracker.js';
 import { ItemTrackerBuilder } from '../tracker/ItemTrackBuilder.js';
 import { validateExifProperties } from '../exif/validation/Validations.js';
 import exifApplyTo from '../exif/ExifWriting.js';
+import WrapperMutableItemTracker from '../tracker/WrapperMutableItemTracker.js';
 
 type FilesystemApplyCommand = {
   filepath: string;
   destPath: string;
   exifProperties: ExifProperty<any>[];
-  itemTracker: ItemTracker;
+  itemTracker: WrapperMutableItemTracker;
 };
 
 type WithDestPath = FilesystemApplyCommand & {
@@ -22,20 +23,7 @@ type WithDestPath = FilesystemApplyCommand & {
 const check = (
   command: FilesystemApplyCommand,
 ): Either<Error, FilesystemApplyCommand> => {
-  const move = canMove(command.filepath, command.destPath);
   const validationErrors = validateExifProperties(command.exifProperties);
-
-  if (!move) {
-    command.itemTracker.track(
-      ItemTrackerBuilder.start()
-        .withId(command.filepath)
-        .asErrorItem(`CAN'T MOVE FILE ${command.filepath}`)
-        .build(),
-    );
-    return left(
-      new Error(`CHECK_MOVING_FILE: CAN'T MOVE FILE ${command.filepath}`),
-    );
-  }
 
   if (validationErrors.length > 0) {
     validationErrors.forEach((validationError) => {

@@ -23,6 +23,8 @@ import ProgressTracker from '../../shared/tracker/ProgressTracker.js';
 import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
 import compositeExtractor from '../../shared/extractor/CompositeExtractor.js';
 import buildFilenameWithFormat from '../../shared/filesystem/BuildFilenameWithFormat.js';
+import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
+import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
 
 export class MoveAndCatalogFileUseCase {
   constructor(
@@ -57,15 +59,17 @@ export class MoveAndCatalogFileUseCase {
         return this.processBatches(
           batchArray(files, command.batchSize),
           command.destinationDirectory,
-          ProgressTracker.init(files.length, command.progress),
-          ItemTracker.init(command.itemCallback),
+          new WrapperMutableProgressTracker(
+            ProgressTracker.init(files.length, command.progress),
+          ),
+          new WrapperMutableItemTracker(ItemTracker.init(command.itemCallback)),
         );
       }),
     );
 
   private extractFilepath = (
     filePath: string,
-    itemTracker: ItemTracker,
+    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, Option<FileMetadata>> =>
     pipe(
       TE.fromTask(
@@ -96,8 +100,8 @@ export class MoveAndCatalogFileUseCase {
   private filterAndEnrichMetadas = (
     optionFilemetadas: Option<FileMetadata>[],
     destDir: string,
-    progressTracker: ProgressTracker,
-    itemTracker: ItemTracker,
+    progressTracker: WrapperMutableProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, void> => {
     return pipe(
       optionFilemetadas,
@@ -115,8 +119,8 @@ export class MoveAndCatalogFileUseCase {
   private processBatches = (
     batches: string[][],
     destDir: string,
-    progressTracker: ProgressTracker,
-    itemTracker: ItemTracker,
+    progressTracker: WrapperMutableProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, void> =>
     pipe(
       batches,
@@ -141,8 +145,8 @@ export class MoveAndCatalogFileUseCase {
   private processEnrichedMetadataBatch = (
     fileMetadatas: FileMetadata[],
     destDir: string,
-    progressTracker: ProgressTracker,
-    itemTracker: ItemTracker,
+    progressTracker: WrapperMutableProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, void> =>
     pipe(
       fileMetadatas,
@@ -176,8 +180,8 @@ export class MoveAndCatalogFileUseCase {
   private processSingleFile = (
     metadata: DateMetadata,
     destDir: string,
-    tracker: ProgressTracker,
-    itemTracker: ItemTracker,
+    tracker: WrapperMutableProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, void> => {
     const destinationDirPath = buildDirectoryPath(
       destDir,

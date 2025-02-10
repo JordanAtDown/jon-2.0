@@ -8,10 +8,6 @@ export type DestinationPath = {
   path: string;
 };
 
-export const canMove = (src: string, dest: string): boolean => {
-  return true;
-};
-
 const moveFile = (
   filepath: string,
   destDir: string,

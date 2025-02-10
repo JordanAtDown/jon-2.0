@@ -23,8 +23,10 @@ import CompiledDate from '../../sharedkernel/metadata/CompiledDate.js';
 import { allPages } from '../../shared/utils/batch/GeneratePageNumbers.js';
 import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
 import { DateTime } from 'luxon';
-import DateGenerator from '../../shared/tag/DateGenerator';
-import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker';
+import DateGenerator from '../../shared/tag/DateGenerator.js';
+import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
+import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
+import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
 
 export class CompileMetadataUseCase {
   constructor(
@@ -67,8 +69,12 @@ export class CompileMetadataUseCase {
               {},
               command.batchSize,
               checkpointDetails,
-              ItemTracker.init(command.itemCallback),
-              ProgressTracker.init(total, command.progressCallback),
+              new WrapperMutableItemTracker(
+                ItemTracker.init(command.itemCallback),
+              ),
+              new WrapperMutableProgressTracker(
+                ProgressTracker.init(total, command.progressCallback),
+              ),
             ),
           ),
         ),
@@ -81,8 +87,8 @@ export class CompileMetadataUseCase {
     filter: FilterFileMetadata,
     pageSize: number,
     checkpointDetails: CheckpointDetails,
-    itemTracker: ItemTracker,
-    progressTracker: ProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
+    progressTracker: WrapperMutableProgressTracker,
   ): TE.TaskEither<Error, void> {
     return pipe(
       allPages(total),
@@ -104,8 +110,8 @@ export class CompileMetadataUseCase {
     page: number,
     filter: FilterFileMetadata,
     batchSize: number,
-    itemTracker: ItemTracker,
-    progressTracker: ProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
+    progressTracker: WrapperMutableProgressTracker,
     checkpoint: CheckpointDetails,
   ): TE.TaskEither<Error, void> {
     return pipe(
@@ -141,7 +147,7 @@ export class CompileMetadataUseCase {
 
   private processMetadata(
     fileMetadata: FileMetadata,
-    itemTracker: ItemTracker,
+    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, string> {
     return pipe(
       fileMetadata.toCompiledDate(

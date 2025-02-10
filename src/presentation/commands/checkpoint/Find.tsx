@@ -5,6 +5,9 @@ import { AppDataPath } from '../../config/AppDataPath.js';
 import DatabaseConfiguration from '../../../infra/shared/config/DatabaseConfiguration.js';
 import CheckpointFindUseCase from '../../../domain/checkpoint/usecase/CheckpointFindUseCase.js';
 import LokiJSCheckpoint from '../../../infra/sharedkernel/checkpoint/LokiJSCheckpoint.js';
+import { render } from 'ink';
+import CheckpointList from './_components/CheckpointList.js';
+import React from 'react';
 
 interface FindOptions {
   id?: string | undefined;
@@ -24,6 +27,7 @@ export const find = new Command('find')
   .action((options: FindOptions) => {
     pipe(
       findCheckpoint(options),
+      // Render Final
       TE.match(
         (error) => console.error(error.message),
         () => console.log('Checkpoint found successfully.'),
@@ -49,16 +53,19 @@ const findCheckpoint = (options: FindOptions): TE.TaskEither<Error, void> => {
         source: options.source,
       });
     }),
-    // Render
-    TE.map((checkpoints) => {
-      if (checkpoints.length === 0) {
-        console.log('Aucun checkpoints');
-      } else {
-        console.log('Liste des checkpoints trouvés :');
-        checkpoints.forEach((checkpoint, index) => {
-          console.log(`Checkpoint ${index + 1}:`, checkpoint);
-        });
-      }
+    // Render execution Réussi
+    TE.map((_) => {
+      render(
+        <CheckpointList
+          checkpoints={[
+            { id: 'id', source: '/root', category: 'ID', totalProcessed: 50 },
+            { id: '01', source: '/root', category: 'ID', totalProcessed: 50 },
+            { id: '45', source: '/root', category: 'ID', totalProcessed: 50 },
+            { id: '45', source: '/root', category: 'ID', totalProcessed: 50 },
+            { id: '545', source: '/root', category: 'ID', totalProcessed: 50 },
+          ]}
+        />,
+      );
     }),
     // TODO:  Close connexion DB
   );

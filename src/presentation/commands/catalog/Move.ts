@@ -1,36 +1,72 @@
 import { Command } from 'commander';
 import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as E from 'fp-ts/lib/Either.js';
 import { pipe } from 'fp-ts/lib/function.js';
-import { AppDataPath } from '../../config/AppDataPath.js';
-import DatabaseConfiguration from '../../../infra/shared/config/DatabaseConfiguration.js';
 import MoveAndCatalogFileUseCase from '../../../domain/catalog/usecase/MoveAndCatalogFileUseCase.js';
 import fastGlobScanner from '../../../infra/shared/filesystem/FastGlobScanner.js';
-import { trackItem, trackProgress } from '../utils/Tracker.js';
+import {
+  createOnCallbacks,
+  initializeTrackingView,
+} from '../_components/InitializeTrackingView.js';
+import { combineValidations } from '../utils/CombineValidations.js';
+import {
+  validateBatchSize,
+  validateDirectoryExists,
+  validateExtensions,
+} from '../utils/Validations.js';
+import { Logger } from '../utils/Logger.js';
+import { DateTime } from 'luxon';
 
-interface MoveOptions {
-  batchSize?: number;
-}
-
+const commandsName = 'Move and Catalog';
 export const move = new Command('move')
   .description('Move and catalog files')
   .argument('<rootDirectory>', 'source directory')
   .argument('<destinationDirectory>', 'destination directory')
   .argument('<extensions>', 'list of extensions, separated by comma')
-  .option('-b, --batch <batch>', 'size of the batch', '100')
+  .argument('<batch>', 'size of the batch')
   .action(
-    (
-      rootDir: string,
-      destDir: string,
-      extensions: string,
-      options: MoveOptions,
-    ) => {
+    (rootDir: string, destDir: string, extensions: string, batch: string) => {
+      const startTime = DateTime.now();
+      Logger.info(
+        `Début de l'exécution à : ${startTime.toFormat('dd-MM-yyyy HH:mm:ss')}`,
+      );
+      Logger.info(`Commands ${commandsName}`);
+      Logger.info(`Params root dir : ${rootDir}`);
+      Logger.info(`Params dest dir : ${destDir}`);
+      Logger.info(`Params extensions : ${extensions}`);
+      Logger.info(`Params batchSize : ${batch}`);
+
       pipe(
-        moveAndCatalog(rootDir, destDir, extensions, options),
+        validateMoveCommand(rootDir, destDir, extensions, batch),
+        E.fold(
+          (error) => TE.left(error),
+          (validatedParams) =>
+            moveAndCatalog(
+              validatedParams.rootDirectory,
+              validatedParams.destinationDirectory,
+              validatedParams.extensions,
+              validatedParams.batchSize,
+            ),
+        ),
         TE.match(
-          (error) => console.error(error.message),
-          () => console.log('Checkpoint found successfully.'),
+          (error: Error): void => {
+            Logger.error(
+              `${commandsName} s'est interrompu avec l'erreur : \n ${error.message}`,
+            );
+            console.error(error.message);
+          },
+          () => Logger.info(`${commandsName} succés`),
         ),
       )();
+
+      const endTime = DateTime.now();
+      const durationMillis = endTime.diff(startTime).toMillis();
+      const durationSecs = (durationMillis / 1000).toFixed(2);
+
+      Logger.info(
+        `Fin de l'exécution : ${endTime.toFormat('dd-MM-yyyy HH:mm:ss')}`,
+      );
+      Logger.info(`Durée totale de l'exécution : ${durationSecs} secondes`);
     },
   );
 
@@ -38,27 +74,81 @@ const moveAndCatalog = (
   rootDir: string,
   destDir: string,
   extensions: string,
-  options: MoveOptions,
+  batchSize: string,
 ): TE.TaskEither<Error, void> => {
-  return pipe(
-    // Validation des paramètres
-    // Configuration
-    AppDataPath.getInstance().getAppDataPath(),
-    TE.chain((appDataPath) =>
-      TE.fromEither(DatabaseConfiguration.getInstance(appDataPath)),
-    ),
-    // Exploitation
-    TE.chain((databaseConfig: DatabaseConfiguration) => {
-      const usecase = new MoveAndCatalogFileUseCase(fastGlobScanner, []);
-      return usecase.moveAndCatalogFile({
-        rootDirectory: rootDir,
-        destinationDirectory: destDir,
-        extensions: [],
-        batchSize: 50,
-        progress: trackProgress,
-        itemCallback: trackItem,
-      });
-    }),
-    // TODO:  Close connexion DB
+  const {
+    screen,
+    progressBarComponent,
+    statusETAComponent,
+    log,
+    statusProcess,
+  } = initializeTrackingView();
+
+  const { onItemTrackCallback, onProgressUpdateCallback } = createOnCallbacks(
+    progressBarComponent,
+    statusETAComponent,
+    log,
+    screen,
+    statusProcess,
   );
+
+  // TODO: Tester les composants
+  return new MoveAndCatalogFileUseCase(fastGlobScanner, []).moveAndCatalogFile({
+    rootDirectory: rootDir,
+    destinationDirectory: destDir,
+    extensions: extensions.split(','),
+    batchSize: batchSize ? parseInt(batchSize) : 50,
+    progress: onProgressUpdateCallback,
+    itemCallback: onItemTrackCallback,
+  });
+};
+
+interface MoveParams {
+  rootDirectory: string;
+  destinationDirectory: string;
+  extensions: string;
+  batchSize: string;
+}
+
+const validateMoveParams = combineValidations<MoveParams>(
+  (params) =>
+    pipe(
+      params.rootDirectory,
+      validateDirectoryExists,
+      E.map(() => params),
+    ),
+  (params) =>
+    pipe(
+      params.destinationDirectory,
+      validateDirectoryExists,
+      E.map(() => params),
+    ),
+  (params) =>
+    pipe(
+      params.extensions,
+      validateExtensions,
+      E.map(() => params),
+    ),
+  (params) =>
+    pipe(
+      params.batchSize,
+      validateBatchSize,
+      E.map(() => params),
+    ),
+);
+
+const validateMoveCommand = (
+  rootDirectory: string,
+  destinationDirectory: string,
+  extensions: string,
+  batchSize: string,
+): E.Either<Error, MoveParams> => {
+  const params: MoveParams = {
+    rootDirectory,
+    destinationDirectory,
+    extensions,
+    batchSize,
+  };
+
+  return validateMoveParams(params);
 };

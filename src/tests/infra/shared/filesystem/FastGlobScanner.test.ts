@@ -13,7 +13,7 @@ describe('FastGlobScanner', () => {
 
   beforeEach(async () => {
     await fs.mkdir(testDir, { recursive: true });
-    await fs.writeFile(path.join(testDir, 'file1.txt'), 'contenu 1');
+    await fs.writeFile(path.join(testDir, 'file1.TXT'), 'contenu 1');
     await fs.writeFile(path.join(testDir, 'file2.log'), 'contenu 2');
 
     const subDir = path.join(testDir, 'subdir');
@@ -26,12 +26,12 @@ describe('FastGlobScanner', () => {
   });
 
   it('should scan files matching specific patterns', async () => {
-    const patterns = ['**/*.txt', '**/*.md'];
+    const patterns = ['**/*.txt', '**/*.md', '**/*.TXT', '**/*.MD'];
     const result = await fastGlobScanner.scanFiles(testDir, patterns)();
 
     expectRight(result, (files) => {
       const expectedFiles = [
-        path.join(testDir, 'file1.txt'),
+        path.join(testDir, 'file1.TXT'),
         path.join(testDir, 'subdir/file3.md'),
       ];
       expect(files.sort()).toEqual(expectedFiles.sort());

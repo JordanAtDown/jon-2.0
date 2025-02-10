@@ -29,7 +29,7 @@ export class AppDataPath {
 
   private getPathByPlatform(platform: NodeJS.Platform): string {
     if (platform === 'win32') {
-      const basePath = process.env.LOCALAPPDATA || process.env.APPDATA;
+      const basePath = process.env['LOCALAPPDATA'] || process.env['APPDATA'];
       if (!basePath) {
         throw new Error('Unable to locate AppData directory on Windows.');
       }

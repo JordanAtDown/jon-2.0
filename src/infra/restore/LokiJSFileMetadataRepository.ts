@@ -10,7 +10,7 @@ import {
 import FileMetadataRepository, {
   FilterFileMetadata,
 } from '../../domain/restore/FileMetadataRepository.js';
-import FileMetadata from '../../domain/sharedkernel/metadata/FileMetadata';
+import FileMetadata from '../../domain/sharedkernel/metadata/FileMetadata.js';
 
 const fileMetadata = 'file_metadata';
 

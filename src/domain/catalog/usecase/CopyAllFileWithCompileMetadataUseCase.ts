@@ -28,6 +28,8 @@ import { isNone } from 'fp-ts/lib/Option.js';
 import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
 import { NumberPage } from '../../../tests/infra/utils/LokiJSBaseRepository.js';
 import { allPages } from '../../shared/utils/batch/GeneratePageNumbers.js';
+import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
+import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
 
 class CopyAllFileWithCompileMetadataUseCase {
   constructor(
@@ -58,10 +60,14 @@ class CopyAllFileWithCompileMetadataUseCase {
               {},
               command.batchSize,
               checkpointDetails,
-              ItemTracker.init(command.itemCallback),
-              ProgressTracker.init(
-                numberPage.totalItem,
-                command.progressCallback,
+              new WrapperMutableItemTracker(
+                ItemTracker.init(command.itemCallback),
+              ),
+              new WrapperMutableProgressTracker(
+                ProgressTracker.init(
+                  numberPage.totalItem,
+                  command.progressCallback,
+                ),
               ),
             ),
           ),
@@ -76,8 +82,8 @@ class CopyAllFileWithCompileMetadataUseCase {
     filter: FilterCompiledMetadata,
     pageSize: number,
     checkpointDetails: CheckpointDetails,
-    itemTracker: ItemTracker,
-    progressTracker: ProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
+    progressTracker: WrapperMutableProgressTracker,
   ): TE.TaskEither<Error, void> {
     return pipe(
       allPages(numberPage.totalPages),
@@ -102,8 +108,8 @@ class CopyAllFileWithCompileMetadataUseCase {
     pageNumber: number,
     batchSize: number,
     checkpointDetails: CheckpointDetails,
-    itemTracker: ItemTracker,
-    progressTracker: ProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
+    progressTracker: WrapperMutableProgressTracker,
   ): TE.TaskEither<Error, void> => {
     return pipe(
       this.compiledMetadataRepository.getPageBy(filter, pageNumber, batchSize),
@@ -129,8 +135,8 @@ class CopyAllFileWithCompileMetadataUseCase {
     destinationDir: string,
     metadatas: CompiledMetadata[],
     checkpointDetails: CheckpointDetails,
-    itemTracker: ItemTracker,
-    progressTracker: ProgressTracker,
+    itemTracker: WrapperMutableItemTracker,
+    progressTracker: WrapperMutableProgressTracker,
   ): TE.TaskEither<Error, void> => {
     return pipe(
       metadatas,
