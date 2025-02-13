@@ -1,5 +1,6 @@
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import FileMetadata from '../sharedkernel/metadata/FileMetadata.js';
+import { NumberPage } from '../../tests/infra/utils/LokiJSBaseRepository.js';
 
 export type FilterFileMetadata = {
   id?: string;
@@ -10,7 +11,7 @@ interface FileMetadataRepository {
   getTotalBy(
     filter: FilterFileMetadata,
     pageSize: number,
-  ): TE.TaskEither<Error, number>;
+  ): TE.TaskEither<Error, NumberPage>;
   getPageBy(
     page: number,
     filter: FilterFileMetadata,

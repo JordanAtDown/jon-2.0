@@ -9,13 +9,13 @@
     "url": "git+https://github.com/JordanAtDown/jon-2.0.git"
   },
   "scripts": {
-    "start": "tsx src/presentation/commands/App.ts",
-    "build": "tsc && npm run copy-resources && npm run copy-conf-npm",
+    "start": "NODE_ENV=dev tsx src/presentation/commands/App.ts",
+    "build": "NODE_ENV=production tsc && npm run copy-resources && npm run copy-conf-npm",
     "copy-resources": "cp -r resources dist/",
     "copy-conf-npm": "cp package.json dist/ && cp README.md dist/",
-    "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
+    "test": "NODE_ENV=test vitest run --passWithNoTests",
+    "test:watch": "NODE_ENV=test vitest --watch",
+    "test:coverage": "NODE_ENV=test vitest --coverage",
     "clean": "rm -rf dist coverage",
     "dev": "ts-node-dev --respawn src/index.ts",
     "lint": "eslint . --config eslint.config.mjs --ignore-pattern 'dist/*'",
@@ -52,7 +52,6 @@
     "luxon": "^3.5.0",
     "react": "^18.3.1",
     "tsx": "^4.19.2",
-    "uuid": "^11.0.5",
     "winston": "^3.17.0"
   },
   "devDependencies": {

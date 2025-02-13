@@ -12,8 +12,8 @@ import {
   base64Image,
   extractExifProperties,
   writeBase64ImageToFile,
-} from '../../../shared/utils/test/Image';
-import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem';
+} from '../../../shared/utils/test/Image.js';
+import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem.js';
 
 const TEST_DIR = path.join(__dirname, 'test-output');
 const TEST_IMAGE_PATH = path.join(TEST_DIR, 'testImage.jpg');
@@ -48,7 +48,7 @@ describe('ExifWriting', () => {
       'Make',
       'DateTimeOriginal',
     ]);
-    await expectTaskEitherRight(extract, (exifData) => {
+    await expectTaskEitherRight(extract, (exifData: Record<string, any>) => {
       expect(exifData['Make']).toBe('Test Camera Maker');
       expect(exifData['DateTimeOriginal']).instanceOf(ExifDateTime);
       expect((exifData['DateTimeOriginal'] as ExifDateTime).toISOString()).toBe(
@@ -75,7 +75,7 @@ describe('ExifWriting', () => {
     const nonexistentFilePath = path.join(TEST_DIR, 'nonexistent.jpg');
     const result = exifApplyTo(nonexistentFilePath, exifProperties);
 
-    await expectTaskEitherLeft(result, (error) => {
+    await expectTaskEitherLeft(result, (error: Error) => {
       expect(error.message).toMatch(/FAILED_EXIF_WRITE/);
     });
   });

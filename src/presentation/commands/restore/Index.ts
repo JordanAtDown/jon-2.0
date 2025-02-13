@@ -1,6 +1,6 @@
-import { compiled } from './Compile.js';
+import { compile } from './Compile.js';
 import { extract } from './Extract.js';
 
-const commands = [compiled, extract];
+const commands = [compile, extract];
 
 export default commands;

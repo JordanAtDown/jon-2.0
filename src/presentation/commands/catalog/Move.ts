@@ -1,23 +1,16 @@
 import { Command } from 'commander';
-import * as TE from 'fp-ts/lib/TaskEither.js';
-import * as E from 'fp-ts/lib/Either.js';
+import {
+  MoveCommandInput,
+  validateMoveParamsInput,
+} from './_step/ValidateMoveParamsStep.js';
 import { pipe } from 'fp-ts/lib/function.js';
-import MoveAndCatalogFileUseCase from '../../../domain/catalog/usecase/MoveAndCatalogFileUseCase.js';
-import fastGlobScanner from '../../../infra/shared/filesystem/FastGlobScanner.js';
-import {
-  createOnCallbacks,
-  initializeTrackingView,
-} from '../_components/InitializeTrackingView.js';
-import { combineValidations } from '../utils/CombineValidations.js';
-import {
-  validateBatchSize,
-  validateDirectoryExists,
-  validateExtensions,
-} from '../utils/Validations.js';
-import { Logger } from '../utils/Logger.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import { initializeUIStep } from '../_step/InitializeUIStep.js';
+import { moveStep } from './_step/MoveStep.js';
 import { DateTime } from 'luxon';
+import Logger from '../utils/Logger.js';
 
-const commandsName = 'Move and Catalog';
+const commandName = 'Move and Catalog';
 export const move = new Command('move')
   .description('Move and catalog files')
   .argument('<rootDirectory>', 'source directory')
@@ -30,32 +23,31 @@ export const move = new Command('move')
       Logger.info(
         `Début de l'exécution à : ${startTime.toFormat('dd-MM-yyyy HH:mm:ss')}`,
       );
-      Logger.info(`Commands ${commandsName}`);
-      Logger.info(`Params root dir : ${rootDir}`);
-      Logger.info(`Params dest dir : ${destDir}`);
-      Logger.info(`Params extensions : ${extensions}`);
-      Logger.info(`Params batchSize : ${batch}`);
+      Logger.info(`Command: ${commandName}`);
+      Logger.info(`Params - root dir: ${rootDir}`);
+      Logger.info(`Params - dest dir: ${destDir}`);
+      Logger.info(`Params - extensions: ${extensions}`);
+      Logger.info(`Params - batch size: ${batch}`);
+
+      const moveCommandInput = {
+        rootDirectory: rootDir,
+        destDir,
+        extensions,
+        batchSize: batch,
+      };
 
       pipe(
-        validateMoveCommand(rootDir, destDir, extensions, batch),
-        E.fold(
-          (error) => TE.left(error),
-          (validatedParams) =>
-            moveAndCatalog(
-              validatedParams.rootDirectory,
-              validatedParams.destinationDirectory,
-              validatedParams.extensions,
-              validatedParams.batchSize,
-            ),
-        ),
+        Pipeline(moveCommandInput),
         TE.match(
-          (error: Error): void => {
+          (error: Error) => {
             Logger.error(
-              `${commandsName} s'est interrompu avec l'erreur : \n ${error.message}`,
+              `Une erreur est survenue : ${error.message || 'Erreur inconnue'}`,
             );
             console.error(error.message);
           },
-          () => Logger.info(`${commandsName} succés`),
+          () => {
+            Logger.info('Pipeline exécuté avec succès !');
+          },
         ),
       )();
 
@@ -70,85 +62,28 @@ export const move = new Command('move')
     },
   );
 
-const moveAndCatalog = (
-  rootDir: string,
-  destDir: string,
-  extensions: string,
-  batchSize: string,
-): TE.TaskEither<Error, void> => {
-  const {
-    screen,
-    progressBarComponent,
-    statusETAComponent,
-    log,
-    statusProcess,
-  } = initializeTrackingView();
+const Pipeline = (input: MoveCommandInput): TE.TaskEither<Error, void> => {
+  return pipe(
+    validateMoveParamsInput(input),
+    TE.chain((validatedParams) =>
+      pipe(
+        initializeUIStep(),
+        TE.map((callbacks) => ({
+          validatedParams,
+          callbacks,
+        })),
+      ),
+    ),
 
-  const { onItemTrackCallback, onProgressUpdateCallback } = createOnCallbacks(
-    progressBarComponent,
-    statusETAComponent,
-    log,
-    screen,
-    statusProcess,
+    TE.chain(({ validatedParams, callbacks }) =>
+      moveStep({
+        rootDirectory: validatedParams.rootDirectory,
+        destinationDirectory: validatedParams.destDir,
+        extensions: validatedParams.extensions.split(','),
+        batchSize: parseInt(validatedParams.batchSize, 10),
+        progress: callbacks.onProgressUpdateCallback,
+        itemCallback: callbacks.onItemTrackCallback,
+      })(),
+    ),
   );
-
-  // TODO: Tester les composants
-  return new MoveAndCatalogFileUseCase(fastGlobScanner, []).moveAndCatalogFile({
-    rootDirectory: rootDir,
-    destinationDirectory: destDir,
-    extensions: extensions.split(','),
-    batchSize: batchSize ? parseInt(batchSize) : 50,
-    progress: onProgressUpdateCallback,
-    itemCallback: onItemTrackCallback,
-  });
-};
-
-interface MoveParams {
-  rootDirectory: string;
-  destinationDirectory: string;
-  extensions: string;
-  batchSize: string;
-}
-
-const validateMoveParams = combineValidations<MoveParams>(
-  (params) =>
-    pipe(
-      params.rootDirectory,
-      validateDirectoryExists,
-      E.map(() => params),
-    ),
-  (params) =>
-    pipe(
-      params.destinationDirectory,
-      validateDirectoryExists,
-      E.map(() => params),
-    ),
-  (params) =>
-    pipe(
-      params.extensions,
-      validateExtensions,
-      E.map(() => params),
-    ),
-  (params) =>
-    pipe(
-      params.batchSize,
-      validateBatchSize,
-      E.map(() => params),
-    ),
-);
-
-const validateMoveCommand = (
-  rootDirectory: string,
-  destinationDirectory: string,
-  extensions: string,
-  batchSize: string,
-): E.Either<Error, MoveParams> => {
-  const params: MoveParams = {
-    rootDirectory,
-    destinationDirectory,
-    extensions,
-    batchSize,
-  };
-
-  return validateMoveParams(params);
 };

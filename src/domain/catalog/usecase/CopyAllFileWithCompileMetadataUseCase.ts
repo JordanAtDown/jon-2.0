@@ -48,6 +48,7 @@ class CopyAllFileWithCompileMetadataUseCase {
         resolveDefaultCheckpoint(
           optionAggrCheckpoint,
           DefaultCheckpointDataCompiledMetadata,
+          command.idCheckpoint,
         ),
       ),
       TE.chain((checkpointDetails: CheckpointDetails) =>
@@ -65,7 +66,7 @@ class CopyAllFileWithCompileMetadataUseCase {
               ),
               new WrapperMutableProgressTracker(
                 ProgressTracker.init(
-                  numberPage.totalItem,
+                  numberPage.totalItem - checkpointDetails.processed.size,
                   command.progressCallback,
                 ),
               ),

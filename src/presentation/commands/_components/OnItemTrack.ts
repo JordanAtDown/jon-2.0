@@ -3,7 +3,7 @@ import {
   TrackParams,
 } from '../../../domain/shared/tracker/ItemTracker.js';
 import { Widgets } from 'blessed';
-import { Logger } from '../utils/Logger.js';
+import Logger from '../utils/Logger.js';
 
 export const onItemTrack = (
   logBox: Widgets.Log,
@@ -55,14 +55,14 @@ const updateLog = (
   switch (state) {
     case ItemState.ERROR:
       Logger.error(
-        `Error on file - ${id} Message d'erreur : ${'errorMessage' in currentItem ? currentItem.errorMessage : 'Non spécifié'}`,
+        `Error on file - '${id}' Message d'erreur : ${'errorMessage' in currentItem ? currentItem.errorMessage : 'Non spécifié'}`,
       );
       break;
     case ItemState.UNPROCESS:
-      Logger.warn(`Unprocessed file - ${id}`);
+      Logger.warn(`Unprocessed file - '${id}'`);
       break;
     case ItemState.PROCESS:
-      Logger.info(`Processed file - ${id}`);
+      Logger.info(`Processed file - '${id}'`);
       break;
   }
 

@@ -13,15 +13,18 @@ import MetadataRepository, {
 } from '../../domain/catalog/MetadataRepository.js';
 import YearMonth from '../../domain/sharedkernel/metadata/YearMonth.js';
 import CompiledMetadata from '../../domain/sharedkernel/metadata/CompiledMetadata.js';
-
-const COMPILED_METADATA_COLLECTION = 'compiled_metadata';
+import Loki from 'lokijs';
+import { DatabaseConfig } from '../shared/config/Database.js';
+import { RepositoryFactory } from '../../tests/infra/utils/RepositoryFactory.js';
 
 class LokiJSMetadataRepository
   extends LokiJSBaseRepository<CompileMetadataEntity>
   implements MetadataRepository
 {
-  constructor(db: Loki) {
-    super(db, COMPILED_METADATA_COLLECTION);
+  constructor(db: Loki, database: DatabaseConfig) {
+    const collection =
+      RepositoryFactory.createCollection<CompileMetadataEntity>(db, database);
+    super(collection);
   }
 
   getTotalBy(

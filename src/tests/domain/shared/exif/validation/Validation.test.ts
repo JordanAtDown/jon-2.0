@@ -6,7 +6,7 @@ import {
   validateNotEmpty,
   validateNumericRange,
 } from '../../../../../domain/shared/exif/validation/Validations.js';
-import { ExifPropertyBuilder } from '../../../../../domain/shared/exif/ExifProperty';
+import { ExifPropertyBuilder } from '../../../../../domain/shared/exif/ExifProperty.js';
 
 describe('validateExifProperties', () => {
   it('should return no validation errors for valid properties', () => {

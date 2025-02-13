@@ -3,7 +3,9 @@ import * as TE from 'fp-ts/lib/TaskEither.js';
 import { isLeft } from 'fp-ts/lib/Either.js';
 import { pipe } from 'fp-ts/lib/function.js';
 import * as path from 'path';
+import * as url from 'url';
 
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 export class TagsDictionaryConfiguration {
   private static instance: TagsDictionaryConfiguration | null = null;
 
@@ -57,5 +59,3 @@ export class TagsDictionaryConfiguration {
     return this.hash!;
   }
 }
-
-export default TagsDictionaryConfiguration.getInstance();

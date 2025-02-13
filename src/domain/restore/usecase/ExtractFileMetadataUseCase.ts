@@ -4,14 +4,18 @@ import { fold, Option } from 'fp-ts/lib/Option.js';
 import { pipe } from 'fp-ts/lib/function.js';
 import FileMetadataRepository from '../FileMetadataRepository.js';
 import ExtractFileMetadataCommand from './ExtractFileMetadataCommand.js';
-import { ItemTracker } from '../../shared/tracker/ItemTracker.js';
+import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
 import { filterItems } from '../../shared/utils/fp/FP.js';
 import FileMetadata from '../../sharedkernel/metadata/FileMetadata.js';
 import safeExtract from '../../shared/extractor/SafeExtract.js';
 import compositeExtractor from '../../shared/extractor/CompositeExtractor.js';
 import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
 import { DateTime } from 'luxon';
-import { CategorySource } from '../../sharedkernel/checkpoint/CheckpointData.js';
+import {
+  CategorySource,
+  DefaultCheckpointDataFileMetadata,
+  resolveDefaultCheckpoint,
+} from '../../sharedkernel/checkpoint/CheckpointData.js';
 import FileScanner from '../../shared/filesystem/FileScanner.js';
 import Extractor from '../../shared/extractor/Extractor.js';
 import ProgressTracker from '../../shared/tracker/ProgressTracker.js';
@@ -19,6 +23,7 @@ import { batchArray } from '../../shared/utils/batch/BatchArray.js';
 import buildPatterns from '../../shared/filesystem/BuildPattern.js';
 import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
 import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
+import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
 
 export class ExtractFileMetadataUseCase {
   constructor(
@@ -98,14 +103,17 @@ export class ExtractFileMetadataUseCase {
     (allFiles: string[]): TE.TaskEither<Error, string[]> =>
       pipe(
         this.checkpoint.findBy(idCheckpoint),
-        // TODO: Ajouter la méthode de resolveDefaultCheckpoint
-        TE.map(
-          fold(
-            () => [],
-            (checkpointData) => Array.from(checkpointData.processed),
+        TE.chain((optionCheckpoint) =>
+          resolveDefaultCheckpoint(
+            optionCheckpoint,
+            DefaultCheckpointDataFileMetadata,
+            idCheckpoint,
           ),
         ),
-        TE.map((processedFiles) => filterItems(allFiles, processedFiles)),
+        TE.map((checkpointDetails) => {
+          const processedFiles = Array.from(checkpointDetails.processed);
+          return filterItems(allFiles, processedFiles);
+        }),
       );
 
   private processBatches = (
@@ -164,14 +172,27 @@ export class ExtractFileMetadataUseCase {
       TE.fromTask,
       TE.chain(
         fold(
-          () => TE.right(O.none),
-          (fileMetadata) =>
-            pipe(
+          () => {
+            itemTracker.track(
+              ItemTrackerBuilder.start()
+                .withId(filePath)
+                .asNormalItem(ItemState.UNPROCESS),
+            );
+            return TE.right(O.none);
+          },
+          (fileMetadata) => {
+            itemTracker.track(
+              ItemTrackerBuilder.start()
+                .withId(fileMetadata.fullPath)
+                .asNormalItem(ItemState.PROCESS),
+            );
+            return pipe(
               TE.fromTask(() =>
                 this.fileMetadataRepository.save(fileMetadata)(),
               ),
               TE.map(() => O.some(fileMetadata)),
-            ),
+            );
+          },
         ),
       ),
       TE.map((optionFileMetadata) => {

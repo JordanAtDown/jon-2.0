@@ -1,7 +1,8 @@
-import Loki, { Collection } from 'lokijs';
+import { Collection } from 'lokijs';
 import { fromNullable, Option } from 'fp-ts/lib/Option.js';
 import { TaskEither } from 'fp-ts/lib/TaskEither.js';
 import { tryCatchTask } from '../../../domain/shared/utils/fp/FP.js';
+import Logger from '../../../presentation/commands/utils/Logger.js';
 
 export type NumberPage = {
   totalPages: number;
@@ -10,18 +11,24 @@ export type NumberPage = {
 
 export abstract class LokiJSBaseRepository<ENTITY extends Object> {
   protected collection: Collection<ENTITY>;
-  protected db: Loki;
 
-  // TODO: Ajouter des options pour l'unicité et l'index
-  protected constructor(db: Loki, collectionName: string) {
-    this.collection =
-      db.getCollection<ENTITY>(collectionName) ??
-      db.addCollection<ENTITY>(collectionName);
-    this.db = db;
+  protected constructor(collection: Collection<ENTITY>) {
+    this.collection = collection;
+
+    Logger.info(
+      `Repository for collection '${this.collection.name}' has been successfully initialized.`,
+    );
   }
 
   find(filter: LokiQuery<ENTITY & LokiObj>): TaskEither<Error, ENTITY[]> {
-    return tryCatchTask(async () => this.collection.find(filter));
+    return tryCatchTask(async () => {
+      const allItems = this.collection.find({});
+      Logger.debug(
+        `Collection contents (${allItems.length} items):\n`,
+        JSON.stringify(allItems, null, 2),
+      );
+      return this.collection.find(filter);
+    });
   }
 
   saveOrUpdate(

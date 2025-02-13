@@ -8,11 +8,11 @@ import {
   writeExifData,
 } from '../../../shared/utils/test/Image.js';
 import dateTimeOriginal from '../../../../domain/shared/extractor/DateTimeOriginal.js';
-import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem';
-import { expectRight } from '../../../shared/utils/test/Expected';
-import exif from '../../../../domain/shared/extractor/Exif';
-import compositeExtractor from '../../../../domain/shared/extractor/CompositeExtractor';
-import FileMetadata from '../../../../domain/sharedkernel/metadata/FileMetadata';
+import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem.js';
+import { expectRight } from '../../../shared/utils/test/Expected.js';
+import exif from '../../../../domain/shared/extractor/Exif.js';
+import compositeExtractor from '../../../../domain/shared/extractor/CompositeExtractor.js';
+import FileMetadata from '../../../../domain/sharedkernel/metadata/FileMetadata.js';
 
 describe('Composite Extractor', () => {
   const testDir = path.join(__dirname, 'composite_extractor');
@@ -61,8 +61,8 @@ describe('Composite Extractor', () => {
       expect(metadata.extension).toBe(path.extname(testImagePath));
       expect(metadata.type).toBe('PHOTO');
       expect(metadata.exif).toBeDefined();
-      expect(metadata.exif?.Make).toBe('TestCamera');
-      expect(metadata.exif?.Model).toBe('TestModel');
+      expect(metadata.exif?.['Make']).toBe('TestCamera');
+      expect(metadata.exif?.['Model']).toBe('TestModel');
     });
   });
 

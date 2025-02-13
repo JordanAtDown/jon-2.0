@@ -5,7 +5,7 @@ import FileMetadata from '../../../domain/sharedkernel/metadata/FileMetadata.js'
 import CompiledDate from '../../../domain/sharedkernel/metadata/CompiledDate.js';
 import ExifMetadata from '../../../domain/sharedkernel/metadata/ExifMetadata.js';
 import { DateExtractor } from '../../../domain/shared/regex/DateExtractor.js';
-import { expectNone, expectSome } from '../../shared/utils/test/Expected';
+import { expectNone, expectSome } from '../../shared/utils/test/Expected.js';
 
 describe('FileMetadata', () => {
   describe('should getTags', () => {

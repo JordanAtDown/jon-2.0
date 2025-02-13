@@ -7,6 +7,7 @@ import { deleteFileOrDirectory } from '../../shared/utils/test/Filesystem.js';
 import { CompileMetadataEntity } from '../../../infra/sharedkernel/CompileMetadataEntity.js';
 import { expectRight } from '../../shared/utils/test/Expected.js';
 import YearMonth from '../../../domain/sharedkernel/metadata/YearMonth.js';
+import { DATABASES } from '../../../infra/shared/config/Database.js';
 
 describe('LokiJSMetadataRepository', () => {
   const tempDir = path.join(__dirname, 'lokijsmetadatarepository');
@@ -15,8 +16,14 @@ describe('LokiJSMetadataRepository', () => {
 
   beforeAll(async () => {
     const dbConfig = await initializeDB(tempDir);
-    repository = new LokiJSMetadataRepository(dbConfig.compiledMetadataDB);
-    helper = new CompiledMetadataDBHelper(dbConfig.compiledMetadataDB);
+    repository = new LokiJSMetadataRepository(
+      dbConfig.getDatabase(DATABASES.METADATA_COMPILE.id),
+      DATABASES.METADATA_COMPILE,
+    );
+    helper = new CompiledMetadataDBHelper(
+      dbConfig.getDatabase(DATABASES.METADATA_COMPILE.id),
+      DATABASES.METADATA_COMPILE,
+    );
   });
 
   afterEach(async () => {

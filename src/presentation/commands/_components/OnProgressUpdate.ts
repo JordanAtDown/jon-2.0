@@ -24,18 +24,6 @@ export const onProgressUpdate = (
       statusETA.setContent('Calcul en cours...');
     }
 
-    if (progress.current === progress.total) {
-      // bar.setContent('100%');
-      // screen.key(['C-c', 'q'], () => {
-      //   log.log('{yellow-fg}Press "ENTER" for confirm exit{/yellow-fg}');
-      //   screen.key('enter', () => {
-      //     log.log('{yellow-fg}Exit{/yellow-fg}');
-      //     screen.destroy();
-      //     process.exit(0);
-      //   });
-      // });
-    }
-
     screen.render();
   };
 };

@@ -18,10 +18,11 @@ import {
 import { FileMetadataEntity } from '../../../../infra/restore/FileMetadataEntity.js';
 import { expectRight } from '../../../shared/utils/test/Expected.js';
 import { validateCheckpointEntity } from '../../../shared/utils/test/Validations.js';
-import initializeDB from '../../../infra/utils/InitializeDB';
-import FastGlobScanner from '../../../../infra/shared/filesystem/FastGlobScanner';
-import exif from '../../../../domain/shared/extractor/Exif';
-import LokiJSCheckpoint from '../../../../infra/sharedkernel/checkpoint/LokiJSCheckpoint';
+import initializeDB from '../../../infra/utils/InitializeDB.js';
+import FastGlobScanner from '../../../../infra/shared/filesystem/FastGlobScanner.js';
+import exif from '../../../../domain/shared/extractor/Exif.js';
+import LokiJSCheckpoint from '../../../../infra/sharedkernel/checkpoint/LokiJSCheckpoint.js';
+import { DATABASES } from '../../../../infra/shared/config/Database.js';
 
 describe('ExtractFileMetadataUseCase', () => {
   const tempDir = path.join(__dirname, 'metadata_extraction');
@@ -52,13 +53,25 @@ describe('ExtractFileMetadataUseCase', () => {
 
     useCase = new ExtractFileMetadataUseCase(
       FastGlobScanner,
-      new LokiJSCheckpoint(dbConfig.checkpointDB),
+      new LokiJSCheckpoint(
+        dbConfig.getDatabase(DATABASES.CHECKPOINT.id),
+        DATABASES.CHECKPOINT,
+      ),
       [exif],
-      new LokiJSFileMetadataRepository(dbConfig.fileMetadataDB),
+      new LokiJSFileMetadataRepository(
+        dbConfig.getDatabase(DATABASES.FILE_METADATA.id),
+        DATABASES.FILE_METADATA,
+      ),
     );
 
-    checkpointHelper = new CheckpointDBHelper(dbConfig.checkpointDB);
-    fileMetadataHelper = new FileMetadataDBHelper(dbConfig.fileMetadataDB);
+    checkpointHelper = new CheckpointDBHelper(
+      dbConfig.getDatabase(DATABASES.CHECKPOINT.id),
+      DATABASES.CHECKPOINT,
+    );
+    fileMetadataHelper = new FileMetadataDBHelper(
+      dbConfig.getDatabase(DATABASES.FILE_METADATA.id),
+      DATABASES.FILE_METADATA,
+    );
 
     await createFileStructure(tempDir, fileStructure);
 
@@ -128,7 +141,7 @@ describe('ExtractFileMetadataUseCase', () => {
     expectRight(checkpointData, (checkpointEntities) => {
       expect(checkpointEntities.length).toBe(2);
 
-      validateCheckpointEntity(checkpointEntities[0]!, {
+      validateCheckpointEntity(checkpointEntities[1]!, {
         id: 'checkpoint-1',
         category: 'DIR',
         source: tempDir,
@@ -137,7 +150,7 @@ describe('ExtractFileMetadataUseCase', () => {
           path.join(tempDir, 'images/photo2.jpg'),
         ],
       });
-      validateCheckpointEntity(checkpointEntities[1]!, {
+      validateCheckpointEntity(checkpointEntities[0]!, {
         id: 'checkpoint-1',
         category: 'DIR',
         source: tempDir,

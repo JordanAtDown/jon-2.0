@@ -15,13 +15,12 @@ import {
 import initializeDB from '../../infra/utils/InitializeDB.js';
 import LokiJSMetadataRepository from '../../../infra/catalog/LokiJSMetadataRepository.js';
 import LokiJSCheckpoint from '../../../infra/sharedkernel/checkpoint/LokiJSCheckpoint.js';
-import {
-  expectTaskEitherLeft,
-  expectTaskEitherRight,
-} from '../../shared/utils/test/Expected.js';
+import { expectTaskEitherRight } from '../../shared/utils/test/Expected.js';
 import CheckpointDBHelper from '../../infra/utils/CheckpointDBHelper.js';
 import { ExifDateTime } from 'exiftool-vendored';
 import { validateCheckpointEntity } from '../../shared/utils/test/Validations.js';
+import { DATABASES } from '../../../infra/shared/config/Database.js';
+import CheckpointEntity from '../../../infra/sharedkernel/checkpoint/CheckpointEntity.js';
 
 describe('CopyAllFileWithCompileMetadataUseCase', () => {
   const tempDir = path.join(
@@ -60,11 +59,21 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
     writeBase64ImageToFile(base64Image, image5);
 
     lokiJSMetadataRepository = new LokiJSMetadataRepository(
-      dbConfig.compiledMetadataDB,
+      dbConfig.getDatabase(DATABASES.METADATA_COMPILE.id),
+      DATABASES.METADATA_COMPILE,
     );
-    lokiJSCheckpoint = new LokiJSCheckpoint(dbConfig.checkpointDB);
-    helper = new CompiledMetadataDBHelper(dbConfig.compiledMetadataDB);
-    ckHelper = new CheckpointDBHelper(dbConfig.checkpointDB);
+    lokiJSCheckpoint = new LokiJSCheckpoint(
+      dbConfig.getDatabase(DATABASES.CHECKPOINT.id),
+      DATABASES.CHECKPOINT,
+    );
+    helper = new CompiledMetadataDBHelper(
+      dbConfig.getDatabase(DATABASES.METADATA_COMPILE.id),
+      DATABASES.METADATA_COMPILE,
+    );
+    ckHelper = new CheckpointDBHelper(
+      dbConfig.getDatabase(DATABASES.CHECKPOINT.id),
+      DATABASES.CHECKPOINT,
+    );
 
     const taskEitherAddAll = helper.addAll([
       // 2018/05/IMAGE_2018_05_15-10_00_00.jpg
@@ -203,46 +212,49 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
 
     //// Check Checkpoint
     const taskEitherFind = lokiJSCheckpoint.find({});
-    await expectTaskEitherRight(taskEitherFind, (checkpoints) => {
-      expect(checkpoints).toHaveLength(6);
+    await expectTaskEitherRight(
+      taskEitherFind,
+      (checkpoints: CheckpointEntity[]) => {
+        expect(checkpoints).toHaveLength(6);
 
-      validateCheckpointEntity(checkpoints[0]!, {
-        id: 'checkpoint-1',
-        category: 'ID',
-        source: 'CompiledMetadata',
-        processed: [path.join(tempDir, 'src', 'image6.jpg')],
-      });
-      validateCheckpointEntity(checkpoints[1]!, {
-        id: 'checkpoint-1',
-        category: 'ID',
-        source: 'CompiledMetadata',
-        processed: [path.join(tempDir, 'src', 'image1.jpg')],
-      });
-      validateCheckpointEntity(checkpoints[2]!, {
-        id: 'checkpoint-1',
-        category: 'ID',
-        source: 'CompiledMetadata',
-        processed: [path.join(tempDir, 'src', 'image3.jpg')],
-      });
-      validateCheckpointEntity(checkpoints[3]!, {
-        id: 'checkpoint-1',
-        category: 'ID',
-        source: 'CompiledMetadata',
-        processed: [path.join(tempDir, 'src', 'image5.jpg')],
-      });
-      validateCheckpointEntity(checkpoints[4]!, {
-        id: 'checkpoint-1',
-        category: 'ID',
-        source: 'CompiledMetadata',
-        processed: [path.join(tempDir, 'src', 'image2.jpg')],
-      });
-      validateCheckpointEntity(checkpoints[5]!, {
-        id: 'checkpoint-1',
-        category: 'ID',
-        source: 'CompiledMetadata',
-        processed: [path.join(tempDir, 'src', 'image4.jpg')],
-      });
-    });
+        validateCheckpointEntity(checkpoints[0]!, {
+          id: 'checkpoint-1',
+          category: 'ID',
+          source: 'CompiledMetadata',
+          processed: [path.join(tempDir, 'src', 'image6.jpg')],
+        });
+        validateCheckpointEntity(checkpoints[1]!, {
+          id: 'checkpoint-1',
+          category: 'ID',
+          source: 'CompiledMetadata',
+          processed: [path.join(tempDir, 'src', 'image1.jpg')],
+        });
+        validateCheckpointEntity(checkpoints[2]!, {
+          id: 'checkpoint-1',
+          category: 'ID',
+          source: 'CompiledMetadata',
+          processed: [path.join(tempDir, 'src', 'image3.jpg')],
+        });
+        validateCheckpointEntity(checkpoints[3]!, {
+          id: 'checkpoint-1',
+          category: 'ID',
+          source: 'CompiledMetadata',
+          processed: [path.join(tempDir, 'src', 'image5.jpg')],
+        });
+        validateCheckpointEntity(checkpoints[4]!, {
+          id: 'checkpoint-1',
+          category: 'ID',
+          source: 'CompiledMetadata',
+          processed: [path.join(tempDir, 'src', 'image2.jpg')],
+        });
+        validateCheckpointEntity(checkpoints[5]!, {
+          id: 'checkpoint-1',
+          category: 'ID',
+          source: 'CompiledMetadata',
+          processed: [path.join(tempDir, 'src', 'image4.jpg')],
+        });
+      },
+    );
 
     //// Check destination directory
     const expectedFiles = [
@@ -262,7 +274,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
       ['Keywords', 'DateTimeOriginal'],
     );
     const tag01: string[] = ['tag1', 'tag2'];
-    await expectTaskEitherRight(extract01, (exifData) => {
+    await expectTaskEitherRight(extract01, (exifData: Record<string, any>) => {
       expect(exifData['Keywords']).toEqual(expect.arrayContaining(tag01));
       expect(exifData['DateTimeOriginal']).instanceOf(ExifDateTime);
       expect((exifData['DateTimeOriginal'] as ExifDateTime).toISOString()).toBe(
@@ -275,7 +287,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
       ['Keywords', 'DateTimeOriginal'],
     );
     const tag02: string[] = ['mer', 'voiture'];
-    await expectTaskEitherRight(extract02, (exifData) => {
+    await expectTaskEitherRight(extract02, (exifData: Record<string, any>) => {
       expect(exifData['Keywords']).toEqual(expect.arrayContaining(tag02));
       expect(exifData['DateTimeOriginal']).instanceOf(ExifDateTime);
       expect((exifData['DateTimeOriginal'] as ExifDateTime).toISOString()).toBe(
@@ -288,7 +300,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
       ['Keywords', 'DateTimeOriginal'],
     );
     const tag03: string[] = ['lego', 'enfant', 'voyages'];
-    await expectTaskEitherRight(extract03, (exifData) => {
+    await expectTaskEitherRight(extract03, (exifData: Record<string, any>) => {
       expect(exifData['Keywords']).toEqual(expect.arrayContaining(tag03));
       expect(exifData['DateTimeOriginal']).instanceOf(ExifDateTime);
       expect((exifData['DateTimeOriginal'] as ExifDateTime).toISOString()).toBe(
@@ -300,7 +312,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
       '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2009/05/IMAGE_2009_05_15-10_00_00.jpg',
       ['Keywords', 'DateTimeOriginal'],
     );
-    await expectTaskEitherRight(extract04, (exifData) => {
+    await expectTaskEitherRight(extract04, (exifData: Record<string, any>) => {
       expect(exifData['Keywords']).toEqual(undefined);
       expect(exifData['DateTimeOriginal']).instanceOf(ExifDateTime);
       expect((exifData['DateTimeOriginal'] as ExifDateTime).toISOString()).toBe(
@@ -313,7 +325,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
       ['Keywords', 'DateTimeOriginal'],
     );
     const tag05: string[] = ['tag1', 'tag2'];
-    await expectTaskEitherRight(extract05, (exifData) => {
+    await expectTaskEitherRight(extract05, (exifData: Record<string, any>) => {
       expect(exifData['Keywords']).toEqual(expect.arrayContaining(tag05));
       expect(exifData['DateTimeOriginal']).instanceOf(ExifDateTime);
       expect((exifData['DateTimeOriginal'] as ExifDateTime).toISOString()).toBe(

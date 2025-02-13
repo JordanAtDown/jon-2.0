@@ -5,6 +5,6 @@
  *
  * ===================================================
  */
-const appName: string = 'tyrion-2.0';
+const appName: string = 'jon2.0';
 
 export { appName };

@@ -19,15 +19,19 @@ import {
   aggregateCheckpointsEntitiesWithFilter,
 } from './Aggregation.js';
 import { DateTime } from 'luxon';
-
-const checkpoint = 'checkpoint';
+import { RepositoryFactory } from '../../../tests/infra/utils/RepositoryFactory.js';
+import { DatabaseConfig } from '../../shared/config/Database.js';
 
 export class LokiJSCheckpoint
   extends LokiJSBaseRepository<CheckpointEntity>
   implements Checkpoint
 {
-  constructor(db: Loki) {
-    super(db, checkpoint);
+  constructor(db: Loki, database: DatabaseConfig) {
+    const collection = RepositoryFactory.createCollection<CheckpointEntity>(
+      db,
+      database,
+    );
+    super(collection);
   }
 
   findBy(id: string): TE.TaskEither<Error, Option<AggregatedCheckpointData>> {

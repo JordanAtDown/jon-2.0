@@ -8,15 +8,18 @@ import {
 } from '../sharedkernel/CompileMetadataEntity.js';
 import { CompiledMetadataRepository } from '../../domain/restore/CompiledMetadataRepository.js';
 import CompiledMetadata from '../../domain/sharedkernel/metadata/CompiledMetadata.js';
+import Loki from 'lokijs';
+import { DatabaseConfig } from '../shared/config/Database.js';
+import { RepositoryFactory } from '../../tests/infra/utils/RepositoryFactory.js';
 
-const compiledMetadata = 'compiled_metadata';
-
-class LokiJSompiledMetadataRepository
+class LokiJSCompiledMetadataRepository
   extends LokiJSBaseRepository<CompileMetadataEntity>
   implements CompiledMetadataRepository
 {
-  constructor(db: Loki) {
-    super(db, compiledMetadata);
+  constructor(db: Loki, database: DatabaseConfig) {
+    const collection =
+      RepositoryFactory.createCollection<CompileMetadataEntity>(db, database);
+    super(collection);
   }
 
   save(metadata: CompiledMetadata): TE.TaskEither<Error, CompiledMetadata> {
@@ -28,4 +31,4 @@ class LokiJSompiledMetadataRepository
   }
 }
 
-export default LokiJSompiledMetadataRepository;
+export default LokiJSCompiledMetadataRepository;

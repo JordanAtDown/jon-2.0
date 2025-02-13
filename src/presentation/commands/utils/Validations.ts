@@ -36,3 +36,8 @@ export const validateBatchSize = validateCondition<string>(
     return Number.isInteger(batchSize) && batchSize > 0;
   },
 );
+
+export const validateIdChekpoint = validateCondition<string>(
+  "L'identifiant du checkpoint doit être une chaîne non vide.",
+  (input) => input.trim().length > 0,
+);

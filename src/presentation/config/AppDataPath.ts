@@ -3,6 +3,7 @@ import { pipe } from 'fp-ts/lib/function.js';
 import * as path from 'path';
 import * as os from 'os';
 import { appName } from './Constant.js';
+import * as fs from 'fs';
 
 export class AppDataPath {
   private static instance: AppDataPath | null = null;
@@ -33,9 +34,19 @@ export class AppDataPath {
       if (!basePath) {
         throw new Error('Unable to locate AppData directory on Windows.');
       }
-      return path.join(basePath, appName);
+      const fullPath = path.join(basePath, appName);
+      this.ensureDirectoryExists(fullPath);
+      return fullPath;
     }
-    return path.join(os.homedir(), `.${appName}`);
+    const fullPath = path.join(os.homedir(), `.${appName}`);
+    this.ensureDirectoryExists(fullPath);
+    return fullPath;
+  }
+
+  private ensureDirectoryExists(dirPath: string): void {
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
   }
 
   /**

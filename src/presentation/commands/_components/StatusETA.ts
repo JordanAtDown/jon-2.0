@@ -13,6 +13,6 @@ export const statusETA = (screen: Widgets.Screen): Widgets.BoxElement => {
     top: 3,
     height: 3,
     label: ' Temps Estimé (ETA) ',
-    content: 'Calcul en cours...',
+    content: 'Aucun traitement en cours',
   });
 };

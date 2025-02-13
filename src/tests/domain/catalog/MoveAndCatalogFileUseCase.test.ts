@@ -4,22 +4,19 @@ import { ExifDateTime } from 'exiftool-vendored';
 import MoveAndCatalogFileUseCase from '../../../domain/catalog/usecase/MoveAndCatalogFileUseCase.js';
 import fastGlobScanner from '../../../infra/shared/filesystem/FastGlobScanner.js';
 import MoveAndCatalogFileCommand from '../../../domain/catalog/usecase/MoveAndCatalogFileCommand.js';
-import {
-  expectTaskEitherLeft,
-  expectTaskEitherRight,
-} from '../../shared/utils/test/Expected.js';
+import { expectTaskEitherRight } from '../../shared/utils/test/Expected.js';
 import {
   base64Image,
   extractExifProperties,
   writeBase64ImageToFile,
   writeExifData,
-} from '../../shared/utils/test/Image';
+} from '../../shared/utils/test/Image.js';
 import {
   createFileStructure,
   deleteFileOrDirectory,
   FileStructure,
   findFiles,
-} from '../../shared/utils/test/Filesystem';
+} from '../../shared/utils/test/Filesystem.js';
 
 describe('MoveAndCatalogFileUseCase', () => {
   const tempDir = path.join(__dirname, 'MoveAndCatalogFileUseCase');
@@ -99,7 +96,7 @@ describe('MoveAndCatalogFileUseCase', () => {
       path.join(DEST_DIR, '2016', '08', 'PHOTO_2016_08_08-19_28_33.jpg'),
       ['DateTimeOriginal'],
     );
-    await expectTaskEitherRight(extract01, (exifData) => {
+    await expectTaskEitherRight(extract01, (exifData: Record<string, any>) => {
       expect(exifData['DateTimeOriginal']).instanceOf(ExifDateTime);
       expect((exifData['DateTimeOriginal'] as ExifDateTime).toISOString()).toBe(
         '2016-08-08T19:28:33',
@@ -109,7 +106,7 @@ describe('MoveAndCatalogFileUseCase', () => {
       path.join(DEST_DIR, '2023', '07', 'PHOTO_2023_07_15-12_34_56.jpg'),
       ['DateTimeOriginal'],
     );
-    await expectTaskEitherRight(extract02, (exifData) => {
+    await expectTaskEitherRight(extract02, (exifData: Record<string, any>) => {
       expect(exifData['DateTimeOriginal']).instanceOf(ExifDateTime);
       expect((exifData['DateTimeOriginal'] as ExifDateTime).toISOString()).toBe(
         '2023-07-15T12:34:56',

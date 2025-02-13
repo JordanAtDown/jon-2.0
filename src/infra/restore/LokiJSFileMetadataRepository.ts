@@ -1,7 +1,10 @@
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import Loki from 'lokijs';
 import { pipe } from 'fp-ts/lib/function.js';
-import { LokiJSBaseRepository } from '../../tests/infra/utils/LokiJSBaseRepository.js';
+import {
+  LokiJSBaseRepository,
+  NumberPage,
+} from '../../tests/infra/utils/LokiJSBaseRepository.js';
 import {
   FileMetadataEntity,
   mapFileMetadataEntityToFileMetadata,
@@ -11,15 +14,19 @@ import FileMetadataRepository, {
   FilterFileMetadata,
 } from '../../domain/restore/FileMetadataRepository.js';
 import FileMetadata from '../../domain/sharedkernel/metadata/FileMetadata.js';
-
-const fileMetadata = 'file_metadata';
+import { DatabaseConfig } from '../shared/config/Database.js';
+import { RepositoryFactory } from '../../tests/infra/utils/RepositoryFactory.js';
 
 class LokiJSFileMetadataRepository
   extends LokiJSBaseRepository<FileMetadataEntity>
   implements FileMetadataRepository
 {
-  constructor(db: Loki) {
-    super(db, fileMetadata);
+  constructor(db: Loki, database: DatabaseConfig) {
+    const collection = RepositoryFactory.createCollection<FileMetadataEntity>(
+      db,
+      database,
+    );
+    super(collection);
   }
 
   getPageBy(
@@ -35,8 +42,8 @@ class LokiJSFileMetadataRepository
   getTotalBy(
     filter: FilterFileMetadata,
     pageSize: number,
-  ): TE.TaskEither<Error, number> {
-    return this.getTotal(this.buildQuery(filter), pageSize);
+  ): TE.TaskEither<Error, NumberPage> {
+    return this.getTotalNumberPage(this.buildQuery(filter), pageSize);
   }
 
   save(fileMetadata: FileMetadata): TE.TaskEither<Error, FileMetadata> {

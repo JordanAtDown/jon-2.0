@@ -49,23 +49,22 @@ export class CompileMetadataUseCase {
    *
    * @returns A TaskEither containing either an Error on failure or void on successful processing.
    */
-  public compile(
-    command: CompileMetadataUseCaseCommand,
-  ): TE.TaskEither<Error, void> {
+  compile(command: CompileMetadataUseCaseCommand): TE.TaskEither<Error, void> {
     return pipe(
       this.checkpoint.findBy(command.idCheckpoint),
       TE.chain((optionAggrCheckpoint) =>
         resolveDefaultCheckpoint(
           optionAggrCheckpoint,
           DefaultCheckpointDataFileMetadata,
+          command.idCheckpoint,
         ),
       ),
       TE.chain((checkpointDetails: CheckpointDetails) =>
         pipe(
           this.fileMetadataRepository.getTotalBy({}, command.batchSize),
-          TE.chain((total) =>
+          TE.chain((numberPage) =>
             this.iteratePages(
-              total,
+              numberPage.totalPages,
               {},
               command.batchSize,
               checkpointDetails,
@@ -73,7 +72,10 @@ export class CompileMetadataUseCase {
                 ItemTracker.init(command.itemCallback),
               ),
               new WrapperMutableProgressTracker(
-                ProgressTracker.init(total, command.progressCallback),
+                ProgressTracker.init(
+                  numberPage.totalItem - checkpointDetails.processed.size,
+                  command.progressCallback,
+                ),
               ),
             ),
           ),

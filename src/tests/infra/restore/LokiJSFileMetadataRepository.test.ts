@@ -1,6 +1,5 @@
-import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ExifDateTime } from 'exiftool-vendored';
-import path from 'path';
 import LokiJSFileMetadataRepository from '../../../infra/restore/LokiJSFileMetadataRepository.js';
 import { deleteFileOrDirectory } from '../../shared/utils/test/Filesystem.js';
 import FileMetadata from '../../../domain/sharedkernel/metadata/FileMetadata.js';
@@ -8,21 +7,30 @@ import { expectRight } from '../../shared/utils/test/Expected.js';
 import FileMetadataDBHelper from '../utils/FileMetadataDDBHelper.js';
 import initializeDB from '../utils/InitializeDB.js';
 import { FileMetadataEntity } from '../../../infra/restore/FileMetadataEntity.js';
+import { DATABASES } from '../../../infra/shared/config/Database.js';
+import path from 'path';
+import { DatabaseConfiguration } from '../../../infra/shared/config/DatabaseConfiguration.js';
 
 describe('LokiJSFileMetadataRepository', () => {
-  const tempDir = path.join(__dirname, 'lokijscheckpoint');
+  const tempDir = path.join(__dirname, 'lokiJSFileMetadataRepository');
   let repository: LokiJSFileMetadataRepository;
   let helper: FileMetadataDBHelper;
+  let dbConfig: DatabaseConfiguration;
 
-  beforeEach(async () => {
-    const dbConfig = await initializeDB(tempDir);
-    const fileMetadataDB = dbConfig.fileMetadataDB;
-    repository = new LokiJSFileMetadataRepository(fileMetadataDB);
-    helper = new FileMetadataDBHelper(fileMetadataDB);
+  beforeAll(async () => {
+    dbConfig = await initializeDB(tempDir);
+    repository = new LokiJSFileMetadataRepository(
+      dbConfig.getDatabase(DATABASES.FILE_METADATA.id),
+      DATABASES.FILE_METADATA,
+    );
+    helper = new FileMetadataDBHelper(
+      dbConfig.getDatabase(DATABASES.FILE_METADATA.id),
+      DATABASES.FILE_METADATA,
+    );
   });
 
   afterEach(async () => {
-    helper.delete({});
+    await dbConfig.clearAllCollections();
   });
 
   afterAll(async () => {
@@ -85,12 +93,6 @@ describe('LokiJSFileMetadataRepository', () => {
       extension: '.jpg',
       type: 'images',
     };
-    await helper.saveOrUpdate(
-      {
-        _id: 'images/IMG_20180719_205840_01.jpg',
-      },
-      fileMetadata1,
-    )();
     const fileMetadata2: FileMetadataEntity = {
       _id: 'images/images2.jpg',
       filename: 'images2.jpg',
@@ -100,12 +102,6 @@ describe('LokiJSFileMetadataRepository', () => {
       extension: '.jpg',
       type: 'images',
     };
-    await helper.saveOrUpdate(
-      {
-        _id: 'images/images2.jpg',
-      },
-      fileMetadata2,
-    )();
     const fileMetadata3: FileMetadataEntity = {
       _id: 'images/images3.jpg',
       filename: 'images3.jpg',
@@ -115,12 +111,6 @@ describe('LokiJSFileMetadataRepository', () => {
       extension: '.jpg',
       type: 'images',
     };
-    await helper.saveOrUpdate(
-      {
-        _id: 'images/images3.jpg',
-      },
-      fileMetadata3,
-    )();
     const fileMetadata4: FileMetadataEntity = {
       _id: 'images/images4.jpg',
       filename: 'images4.jpg',
@@ -130,12 +120,6 @@ describe('LokiJSFileMetadataRepository', () => {
       extension: '.jpg',
       type: 'images',
     };
-    await helper.saveOrUpdate(
-      {
-        _id: 'images/images4.jpg',
-      },
-      fileMetadata4,
-    )();
     const fileMetadata5: FileMetadataEntity = {
       _id: 'images/images5.jpg',
       filename: 'images5.jpg',
@@ -145,12 +129,13 @@ describe('LokiJSFileMetadataRepository', () => {
       extension: '.jpg',
       type: 'images',
     };
-    await helper.saveOrUpdate(
-      {
-        _id: 'images/images5.jpg',
-      },
+    await helper.addAll([
+      fileMetadata1,
+      fileMetadata2,
+      fileMetadata3,
+      fileMetadata4,
       fileMetadata5,
-    )();
+    ])();
 
     const result = await repository.getPageBy(1, {}, 2)();
 
@@ -169,12 +154,6 @@ describe('LokiJSFileMetadataRepository', () => {
       extension: '.jpg',
       type: 'images',
     };
-    await helper.saveOrUpdate(
-      {
-        _id: 'images/IMG_20180719_205840_01.jpg',
-      },
-      fileMetadata1,
-    )();
     const fileMetadata2: FileMetadataEntity = {
       _id: 'images/images2.jpg',
       filename: 'images2.jpg',
@@ -184,12 +163,6 @@ describe('LokiJSFileMetadataRepository', () => {
       extension: '.jpg',
       type: 'images',
     };
-    await helper.saveOrUpdate(
-      {
-        _id: 'images/images2.jpg',
-      },
-      fileMetadata2,
-    )();
     const fileMetadata3: FileMetadataEntity = {
       _id: 'images/images3.jpg',
       filename: 'images3.jpg',
@@ -199,12 +172,6 @@ describe('LokiJSFileMetadataRepository', () => {
       extension: '.jpg',
       type: 'images',
     };
-    await helper.saveOrUpdate(
-      {
-        _id: 'images/images3.jpg',
-      },
-      fileMetadata3,
-    )();
     const fileMetadata4: FileMetadataEntity = {
       _id: 'images/images4.jpg',
       filename: 'images4.jpg',
@@ -214,12 +181,6 @@ describe('LokiJSFileMetadataRepository', () => {
       extension: '.jpg',
       type: 'images',
     };
-    await helper.saveOrUpdate(
-      {
-        _id: 'images/images4.jpg',
-      },
-      fileMetadata4,
-    )();
     const fileMetadata5: FileMetadataEntity = {
       _id: 'images/images5.jpg',
       filename: 'images5.jpg',
@@ -229,17 +190,25 @@ describe('LokiJSFileMetadataRepository', () => {
       extension: '.jpg',
       type: 'images',
     };
-    await helper.saveOrUpdate(
-      {
-        _id: 'images/images5.jpg',
-      },
+    await helper.addAll([
+      fileMetadata1,
+      fileMetadata2,
+      fileMetadata3,
+      fileMetadata4,
       fileMetadata5,
-    )();
-
+    ])();
+    // const taskEither = helper.find({});
+    // await expectTaskEitherRight(
+    //   taskEither,
+    //   (entities: FileMetadataEntity[]) => {
+    //     expect(entities.length).toHaveLength(5);
+    //   },
+    // );
     const result = await repository.getTotalBy({}, 2)();
 
     expectRight(result, (total) => {
-      expect(total).toBe(3);
+      expect(total.totalPages).toBe(3);
+      expect(total.totalItem).toBe(5);
     });
   });
 });

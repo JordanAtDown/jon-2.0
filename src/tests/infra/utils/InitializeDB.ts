@@ -1,5 +1,4 @@
-import * as E from 'fp-ts/lib/Either.js';
-import DatabaseConfiguration from '../../../infra/shared/config/DatabaseConfiguration.js';
+import { DatabaseConfiguration } from '../../../infra/shared/config/DatabaseConfiguration.js';
 
 /**
  * Initializes a database configuration with `DatabaseConfiguration`.
@@ -9,13 +8,7 @@ import DatabaseConfiguration from '../../../infra/shared/config/DatabaseConfigur
 export const initializeDB = async (
   path: string,
 ): Promise<DatabaseConfiguration> => {
-  const dbConfigOrError = DatabaseConfiguration.getInstance(path);
-
-  if (E.isLeft(dbConfigOrError)) {
-    throw dbConfigOrError.left;
-  }
-
-  return dbConfigOrError.right;
+  return DatabaseConfiguration.getInstance(path);
 };
 
 export default initializeDB;

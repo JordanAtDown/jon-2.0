@@ -6,7 +6,7 @@ import CompiledMetadataDBHelper from '../../../infra/utils/CompiledMetadataDBHel
 import FileMetadataDBHelper from '../../../infra/utils/FileMetadataDDBHelper.js';
 import initializeDB from '../../../infra/utils/InitializeDB.js';
 import LokiJSFileMetadataRepository from '../../../../infra/restore/LokiJSFileMetadataRepository.js';
-import LokiJSompiledMetadataRepository from '../../../../infra/restore/LokiJSompiledMetadataRepository.js';
+import LokiJSCompiledMetadataRepository from '../../../../infra/restore/LokiJSCompiledMetadataRepository';
 import HashDateGenerator from '../../../../infra/shared/tag/HashDateGenerator.js';
 import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem.js';
 import { CompileMetadataUseCaseCommand } from '../../../../domain/restore/usecase/CompileMetadataUseCaseCommand.js';
@@ -16,8 +16,9 @@ import {
 } from '../../../shared/utils/test/Expected.js';
 import { DateTime } from 'luxon';
 import { validateCheckpointEntity } from '../../../shared/utils/test/Validations.js';
-import LokiJSCheckpoint from '../../../../infra/sharedkernel/checkpoint/LokiJSCheckpoint';
-import HashTagGenerator from '../../../../infra/shared/tag/HashTagGenerator';
+import LokiJSCheckpoint from '../../../../infra/sharedkernel/checkpoint/LokiJSCheckpoint.js';
+import HashTagGenerator from '../../../../infra/shared/tag/HashTagGenerator.js';
+import { DATABASES } from '../../../../infra/shared/config/Database.js';
 
 describe('CompileMetadataUseCase', () => {
   const tempDir = path.join(__dirname, 'compile_metadata_usecase');
@@ -43,12 +44,17 @@ describe('CompileMetadataUseCase', () => {
     dbPath = path.join(tempDir, 'db');
     const dbConfig = await initializeDB(dbPath);
 
-    const checkpointRepository = new LokiJSCheckpoint(dbConfig.checkpointDB);
-    const fileMetadataRepository = new LokiJSFileMetadataRepository(
-      dbConfig.fileMetadataDB,
+    const checkpointRepository = new LokiJSCheckpoint(
+      dbConfig.getDatabase(DATABASES.CHECKPOINT.id),
+      DATABASES.CHECKPOINT,
     );
-    const compiledMetadataRepository = new LokiJSompiledMetadataRepository(
-      dbConfig.compiledMetadataDB,
+    const fileMetadataRepository = new LokiJSFileMetadataRepository(
+      dbConfig.getDatabase(DATABASES.FILE_METADATA.id),
+      DATABASES.FILE_METADATA,
+    );
+    const compiledMetadataRepository = new LokiJSCompiledMetadataRepository(
+      dbConfig.getDatabase(DATABASES.METADATA_COMPILE.id),
+      DATABASES.METADATA_COMPILE,
     );
     const tagsGenerator = new HashTagGenerator(tagDictionary);
     const dateGenerator = new HashDateGenerator(dateDictionary);
@@ -61,9 +67,18 @@ describe('CompileMetadataUseCase', () => {
       dateGenerator,
     );
 
-    ckHelper = new CheckpointDBHelper(dbConfig.checkpointDB);
-    fmHelper = new FileMetadataDBHelper(dbConfig.fileMetadataDB);
-    cmHelper = new CompiledMetadataDBHelper(dbConfig.compiledMetadataDB);
+    ckHelper = new CheckpointDBHelper(
+      dbConfig.getDatabase(DATABASES.CHECKPOINT.id),
+      DATABASES.CHECKPOINT,
+    );
+    fmHelper = new FileMetadataDBHelper(
+      dbConfig.getDatabase(DATABASES.FILE_METADATA.id),
+      DATABASES.FILE_METADATA,
+    );
+    cmHelper = new CompiledMetadataDBHelper(
+      dbConfig.getDatabase(DATABASES.METADATA_COMPILE.id),
+      DATABASES.METADATA_COMPILE,
+    );
 
     // Date name format
     const taskEitherAdd01 = fmHelper.add({
