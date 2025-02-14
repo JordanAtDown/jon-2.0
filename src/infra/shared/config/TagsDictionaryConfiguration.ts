@@ -11,7 +11,7 @@ export class TagsDictionaryConfiguration {
 
   private static readonly FILE_PATH = path.join(
     __dirname,
-    '../../resources/tags_dictionary.json',
+    '../../../resources/tags_dictionary.json',
   );
 
   private hash: Record<string, string> | null = null;
