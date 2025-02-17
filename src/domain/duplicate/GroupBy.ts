@@ -1,8 +1,8 @@
-import { pipe } from 'fp-ts/function';
-import * as A from 'fp-ts/Array';
-import * as R from 'fp-ts/Record';
-import { fold } from 'fp-ts/Option';
-import * as TE from 'fp-ts/TaskEither';
+import { pipe } from 'fp-ts/lib/function.js';
+import * as A from 'fp-ts/lib/Array.js';
+import * as R from 'fp-ts/lib/Record.js';
+import { fold } from 'fp-ts/lib/Option.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 import { DuplicateFile, DuplicateFiles } from './DuplicateFiles.js';
 
 export const safeGroupBy = (

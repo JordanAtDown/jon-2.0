@@ -7,6 +7,9 @@ out/
 *.js.map
 *.d.ts
 *.d.ts.map
+*.gz
+*.zip
+node/*
 
 # Fichiers de cache et logs
 npm-debug.log*

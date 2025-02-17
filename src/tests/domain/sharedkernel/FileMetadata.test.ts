@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { DateTime } from 'luxon';
 import * as O from 'fp-ts/lib/Option.js';
 import FileMetadata from '../../../domain/sharedkernel/metadata/FileMetadata.js';
-import CompiledDate from '../../../domain/sharedkernel/metadata/CompiledDate.js';
 import ExifMetadata from '../../../domain/sharedkernel/metadata/ExifMetadata.js';
 import { DateExtractor } from '../../../domain/shared/regex/DateExtractor.js';
 import { expectNone, expectSome } from '../../shared/utils/test/Expected.js';
+import CompiledDate from '../../../domain/sharedkernel/metadata/CompiledDate.js';
 
 describe('FileMetadata', () => {
   describe('should getTags', () => {
@@ -47,12 +47,12 @@ describe('FileMetadata', () => {
   describe('should enrichWithDate', () => {
     const extractDateMock: DateExtractor = (filename: string) =>
       filename === 'image_with_date'
-        ? O.some(DateTime.fromISO('2023-03-15T12:00:00'))
+        ? O.some(DateTime.fromISO('2023-03-15T12:00:00').toUTC())
         : O.none;
 
     it('return date from Exif metadata when present', () => {
       const exif: ExifMetadata = {
-        dateTimeOriginal: DateTime.fromISO('2023-03-14T10:00:00'),
+        dateTimeOriginal: DateTime.fromISO('2023-03-14T10:00:00').toUTC(),
       };
       const fileMetadata = new FileMetadata(
         'image.jpg',
@@ -72,7 +72,7 @@ describe('FileMetadata', () => {
             suppressMilliseconds: true,
             includeOffset: false,
           }),
-        ).toEqual('2023-03-14T10:00:00');
+        ).toEqual('2023-03-14T09:00:00');
       });
     });
 
@@ -94,7 +94,7 @@ describe('FileMetadata', () => {
             suppressMilliseconds: true,
             includeOffset: false,
           }),
-        ).toEqual('2023-03-15T12:00:00');
+        ).toEqual('2023-03-15T11:00:00');
       });
     });
 
@@ -117,17 +117,17 @@ describe('FileMetadata', () => {
   describe('should compiled Date', () => {
     const dateExtractorMock: DateExtractor = (filename: string) =>
       filename.includes('extracted')
-        ? O.some(DateTime.fromISO('2023-03-16T15:30:00'))
+        ? O.some(DateTime.fromISO('2023-03-16T15:30:00', { zone: 'utc' }))
         : O.none;
 
     const dateGeneratorMock: DateExtractor = (filename: string) =>
       filename.includes('generated')
-        ? O.some(DateTime.fromISO('2023-03-17T18:45:00'))
+        ? O.some(DateTime.fromISO('2023-03-17T18:45:00', { zone: 'utc' }))
         : O.none;
 
     it('return compiled dates when all sources have values', () => {
       const exif: ExifMetadata = {
-        dateTimeOriginal: DateTime.fromISO('2023-03-14T12:00:00'),
+        dateTimeOriginal: DateTime.fromISO('2023-03-14T12:00:00').toUTC(),
       };
       const fileMetadata = new FileMetadata(
         'file_extracted_generated.jpg',
@@ -160,7 +160,7 @@ describe('FileMetadata', () => {
               suppressMilliseconds: true,
               includeOffset: false,
             }),
-          ).toEqual('2023-03-14T12:00:00');
+          ).toEqual('2023-03-14T11:00:00');
         });
         expectSome(result.dateDictionnaire, (date) => {
           expect(
@@ -193,7 +193,7 @@ describe('FileMetadata', () => {
 
     it('handle cases where some but not all dates are present', () => {
       const exif: ExifMetadata = {
-        dateTimeOriginal: DateTime.fromISO('2023-03-14T12:00:00Z'),
+        dateTimeOriginal: DateTime.fromISO('2023-03-14T12:00:00').toUTC(),
       };
       const fileMetadata = new FileMetadata(
         'file_extracted.jpg',
@@ -226,7 +226,7 @@ describe('FileMetadata', () => {
               suppressMilliseconds: true,
               includeOffset: false,
             }),
-          ).toEqual('2023-03-14T13:00:00');
+          ).toEqual('2023-03-14T11:00:00');
         });
         expectNone(result.dateDictionnaire);
       });

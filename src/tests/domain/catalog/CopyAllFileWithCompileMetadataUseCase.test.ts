@@ -21,6 +21,7 @@ import { ExifDateTime } from 'exiftool-vendored';
 import { validateCheckpointEntity } from '../../shared/utils/test/Validations.js';
 import { DATABASES } from '../../../infra/shared/config/Database.js';
 import CheckpointEntity from '../../../infra/sharedkernel/checkpoint/CheckpointEntity.js';
+import { DateTime } from 'luxon';
 
 describe('CopyAllFileWithCompileMetadataUseCase', () => {
   const tempDir = path.join(
@@ -88,7 +89,9 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
         extension: '.jpg',
         date: {
           extraite: undefined,
-          dateTimeOriginal: '2018-05-15T10:00:00',
+          dateTimeOriginal: DateTime.fromISO('2018-05-15T10:00:00')
+            .toUTC()
+            .toISO(),
           dateDictionnaire: undefined,
         },
       },
@@ -103,7 +106,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
         hasExif: false,
         extension: '.jpg',
         date: {
-          extraite: '2014-05-15T10:00:00',
+          extraite: DateTime.fromISO('2014-05-15T10:00:00').toUTC().toISO(),
           dateTimeOriginal: undefined,
           dateDictionnaire: undefined,
         },
@@ -120,7 +123,9 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
         extension: '.jpg',
         date: {
           extraite: undefined,
-          dateTimeOriginal: '2023-05-15T10:00:00',
+          dateTimeOriginal: DateTime.fromISO('2023-05-15T10:00:00')
+            .toUTC()
+            .toISO(),
           dateDictionnaire: undefined,
         },
       },
@@ -135,7 +140,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
         hasExif: false,
         extension: '.jpg',
         date: {
-          extraite: '2009-05-15T10:00:00',
+          extraite: DateTime.fromISO('2009-05-15T10:00:00').toUTC().toISO(),
           dateTimeOriginal: undefined,
           dateDictionnaire: undefined,
         },
@@ -151,9 +156,13 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
         hasExif: true,
         extension: '.jpg',
         date: {
-          extraite: '2023-05-15T10:00:00',
-          dateTimeOriginal: '2010-05-15T10:00:00',
-          dateDictionnaire: '2023-05-15T10:00:00',
+          extraite: DateTime.fromISO('2023-05-15T10:00:00').toUTC().toISO(),
+          dateTimeOriginal: DateTime.fromISO('2010-05-15T10:00:00')
+            .toUTC()
+            .toISO(),
+          dateDictionnaire: DateTime.fromISO('2023-05-15T10:00:00')
+            .toUTC()
+            .toISO(),
         },
       },
       {
@@ -167,7 +176,9 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
         extension: '.jpg',
         date: {
           extraite: undefined,
-          dateTimeOriginal: '2012-05-15T10:00:00',
+          dateTimeOriginal: DateTime.fromISO('2012-05-15T10:00:00')
+            .toUTC()
+            .toISO(),
           dateDictionnaire: undefined,
         },
       },

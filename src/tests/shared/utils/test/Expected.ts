@@ -1,6 +1,7 @@
 import * as E from 'fp-ts/lib/Either.js';
 import { TaskEither } from 'fp-ts/lib/TaskEither.js';
 import * as O from 'fp-ts/lib/Option.js';
+import Logger from '../../../../presentation/commands/utils/Logger.js';
 
 /**
  * Ensures that the given Option is a `Some` and applies the provided validation function to its value.
@@ -43,6 +44,10 @@ export const expectRight = <L, A>(
   if (E.isRight(either)) {
     validate(either.right);
   } else {
+    console.debug(JSON.stringify(either.left));
+    Logger.debug(
+      `Expected Right but got Left with: ${JSON.stringify(either.left)}`,
+    );
     throw new Error(
       `Expected Right but got Left with: ${JSON.stringify(either.left)}`,
     );

@@ -1,6 +1,6 @@
 {
   "name": "jon-2.0",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "bin": {
     "jon2.0": "./dist/cli.js"
   },
@@ -10,9 +10,12 @@
   },
   "scripts": {
     "start": "NODE_ENV=dev tsx src/presentation/commands/App.ts",
-    "build": "NODE_ENV=production tsc && npm run copy-resources && npm run copy-conf-npm",
+    "build": "tsc && npm run copy-resources && npm run copy-conf-npm",
     "copy-resources": "cp -r resources dist/",
     "copy-conf-npm": "cp package.json dist/ && cp README.md dist/",
+    "dist": "npm run clean && npm run build && npm run dist:tar && npm run dist:zip",
+    "dist:tar": "tar -czvf jon2.0-linux.tar.gz dist/ node_modules/ jon2.0.sh node/22/node",
+    "dist:zip": "zip -r jon2.0-windows.zip dist/ node_modules/ jon2.0.bat node/22/node.exe",
     "test": "NODE_ENV=test vitest run --passWithNoTests",
     "test:watch": "NODE_ENV=test vitest --watch",
     "test:coverage": "NODE_ENV=test vitest --coverage",

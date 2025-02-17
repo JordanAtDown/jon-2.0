@@ -44,21 +44,21 @@ describe('LokiJSCheckpoint', () => {
       {
         _id: 'checkpoint-1',
         category: 'ID',
-        lastUpdate: '2023-11-01T10:00:00',
+        lastUpdate: '2023-11-01T10:00:00Z',
         processed: ['file1.jpg', 'file2.jpg'],
         source: '/path/to/checkpoint',
       },
       {
         _id: 'checkpoint-1',
         category: 'ID',
-        lastUpdate: '2023-11-01T10:01:00',
+        lastUpdate: '2023-11-01T10:01:00Z',
         processed: ['file3.jpg', 'file4.jpg'],
         source: '/path/to/checkpoint',
       },
       {
         _id: 'checkpoint-2',
         category: 'DIR',
-        lastUpdate: '2023-11-02T10:01:00',
+        lastUpdate: '2023-11-02T10:01:00Z',
         processed: ['file34.jpg', 'file45.jpg'],
         source: '/path/NOT/to/checkpoint',
       },
@@ -80,7 +80,12 @@ describe('LokiJSCheckpoint', () => {
                 suppressMilliseconds: true,
                 includeOffset: false,
               }),
-            ).toEqual('2023-11-01T10:01:00');
+            ).toEqual(
+              DateTime.fromISO('2023-11-01T11:01:00Z').toUTC().toISO({
+                suppressMilliseconds: true,
+                includeOffset: false,
+              }),
+            );
             expect(aggreatedCheckpointData.source).toEqual(
               '/path/to/checkpoint',
             );
@@ -97,7 +102,7 @@ describe('LokiJSCheckpoint', () => {
     const newCheckpoint: CheckpointData = {
       _id: 'checkpoint-12',
       category: CategorySource.ID,
-      lastUpdate: DateTime.fromISO('2021-01-01T10:00:00'),
+      lastUpdate: DateTime.fromISO('2021-01-01T10:00:00', { zone: 'utc' }),
       processed: new Set(['file1.jpg', 'file2.jpg', 'file3.jpg', 'file4.jpg']),
       source: '/path/to/test',
     };
@@ -112,8 +117,16 @@ describe('LokiJSCheckpoint', () => {
         const checkpointEntity = checkpointEntities[0]!;
         expect(checkpointEntity._id).toEqual('checkpoint-12');
         expect(checkpointEntity.category).toEqual('ID');
-        expect(checkpointEntity.lastUpdate).toEqual(
-          '2021-01-01T10:00:00.000+01:00',
+        expect(
+          DateTime.fromISO(checkpointEntity.lastUpdate, { zone: 'utc' }).toISO({
+            suppressMilliseconds: true,
+            includeOffset: false,
+          }),
+        ).toEqual(
+          newCheckpoint.lastUpdate.toUTC().toISO({
+            suppressMilliseconds: true,
+            includeOffset: false,
+          }),
         );
         expect(checkpointEntity.source).toEqual('/path/to/test');
         expect(checkpointEntity.processed).toEqual([

@@ -160,7 +160,7 @@ export class CompileMetadataUseCase {
         () => {
           itemTracker.track(
             ItemTrackerBuilder.start()
-              .withId('') // TODO: Lien manquant
+              .withId(fileMetadata.fullPath)
               .asNormalItem(ItemState.UNPROCESS),
           );
           return TE.right('');
@@ -172,7 +172,7 @@ export class CompileMetadataUseCase {
               () => {
                 itemTracker.track(
                   ItemTrackerBuilder.start()
-                    .withId('') // TODO: Lien manquant
+                    .withId(fileMetadata.fullPath)
                     .asNormalItem(ItemState.UNPROCESS),
                 );
                 return TE.right('');

@@ -23,6 +23,12 @@
     ["@semantic-release/changelog", {
       "changelogFile": "CHANGELOG.md"
     }],
-    ["@semantic-release/github"]
+    ["@semantic-release/github", {
+      "assets": [
+        "jon2.0-linux.tar.gz",
+        "jon2.0-windows.zip"
+      ]
+    }]
+
   ]
 }

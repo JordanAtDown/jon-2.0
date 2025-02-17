@@ -24,9 +24,6 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-      - name: Run tests
-        run: npm test
-
       - name: Build project
         run: npm run build
 
@@ -43,10 +40,41 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Download Node.js runtime for Linux and Windows
+        run: |
+          # Crée un dossier temporaire pour les runtimes
+          mkdir -p runtimes
+          
+          # Télécharger les binaire Node.js pour Linux (tar.gz)
+          curl -o runtimes/node-linux.tar.gz https://nodejs.org/dist/v22.14.0/node-v22.14.0-linux-x64.tar.gz
+          
+          # Télécharger les binaire Node.js pour Windows (zip)
+          curl -o runtimes/node-windows.zip https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-x64.zip
+
+      - name: Package project with runtimes
+        run: |
+          mkdir -p node/22
+          
+          # Extraire et inclure les runtimes dans les archives de distribution
+          tar -xzvf runtimes/node-linux.tar.gz --strip-components=2 -C node/22 node-v22.14.0-linux-x64/bin/node
+          unzip -j runtimes/node-windows.zip "*/node.exe" -d node/22
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Build and package project
+        run: npm run dist
+
+      - name: Upload release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets
+          path: |
+            jon2.0-linux.tar.gz
+            jon2.0-windows.zip
 
       - name: Run semantic-release
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

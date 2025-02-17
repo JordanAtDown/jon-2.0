@@ -22,7 +22,8 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "pretty": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*.ts",

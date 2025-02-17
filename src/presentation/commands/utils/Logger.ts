@@ -86,7 +86,7 @@ async function createLogger(mode: LoggerMode): Promise<winston.Logger> {
       );
 
       return winston.createLogger({
-        level: mode === LoggerMode.TEST ? 'warn' : 'info',
+        level: mode === LoggerMode.TEST ? 'warn' : 'debug',
         format: format.combine(
           format.timestamp({ format: 'DD-MM-YYYY HH:mm:ss' }),
         ),

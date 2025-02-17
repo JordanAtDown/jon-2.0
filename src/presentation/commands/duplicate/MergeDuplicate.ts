@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import { DateTime } from 'luxon';
 import Logger from '../utils/Logger.js';
-import { pipe } from 'fp-ts/function';
-import * as TE from 'fp-ts/TaskEither';
+import { pipe } from 'fp-ts/lib/function.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
 import {
   MergeCommandInput,
   validateMergeParamsInput,
@@ -17,7 +17,7 @@ import { checkpointRepositoryStep } from '../_step/CheckpointRepositoryStep.js';
 
 const commandName = 'Merge';
 export const merge = new Command('merge')
-  .description('merge pathof duplicate files in a new merge path')
+  .description('merge path of duplicate files in a new merge path')
   .argument('<filepath>', 'filepath to import (dupeguru csv file)')
   .argument('<idCheckpoint>', 'identifier of checkpoint based on groupid')
   .action((filepath: string, idCheckpoint: string) => {

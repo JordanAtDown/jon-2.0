@@ -13,9 +13,9 @@ type CompileMetadataEntity = {
   extension: string;
   type: string;
   date: {
-    extraite: string | undefined;
-    dateTimeOriginal: string | undefined;
-    dateDictionnaire: string | undefined;
+    extraite: string | undefined | null;
+    dateTimeOriginal: string | undefined | null;
+    dateDictionnaire: string | undefined | null;
   };
 };
 
