@@ -41,3 +41,17 @@ export const validateIdChekpoint = validateCondition<string>(
   "L'identifiant du checkpoint doit être une chaîne non vide.",
   (input) => input.trim().length > 0,
 );
+
+export const validateIsCSV = validateCondition<string>(
+  `Le fichier doit être au format CSV.`,
+  (filePath) => {
+    try {
+      if (!fs.existsSync(filePath) || fs.lstatSync(filePath).isDirectory()) {
+        return false;
+      }
+      return filePath.trim().toLowerCase().endsWith('.csv');
+    } catch {
+      return false;
+    }
+  },
+);

@@ -3,6 +3,7 @@ import { pipe } from 'fp-ts/lib/function.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { tryCatchTask } from '../utils/fp/FP.js';
+import { copyFile, deleteFile, ensureDirExists } from './FPfilesystem.js';
 
 export type DestinationPath = {
   path: string;
@@ -58,16 +59,5 @@ const findUniqueFilePath = (
         : TE.right(destFilePath),
     ),
   );
-
-const ensureDirExists = (dirPath: string): TE.TaskEither<Error, void> =>
-  tryCatchTask(() =>
-    fs.mkdir(dirPath, { recursive: true }).then(() => undefined),
-  );
-
-const copyFile = (src: string, dest: string): TE.TaskEither<Error, void> =>
-  tryCatchTask(() => fs.copyFile(src, dest));
-
-const deleteFile = (src: string): TE.TaskEither<Error, void> =>
-  tryCatchTask(() => fs.unlink(src));
 
 export default moveFile;

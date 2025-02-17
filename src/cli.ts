@@ -4,6 +4,7 @@ import commandsCheckpoint from './presentation/commands/checkpoint/Index.js';
 import commandsCatalog from './presentation/commands/catalog/Index.js';
 import commandsRestore from './presentation/commands/restore/Index.js';
 import commandsUtils from './presentation/commands/utils/Index.js';
+import commandsDuplicate from './presentation/commands/duplicate/Index.js';
 
 const program = new Command();
 
@@ -27,6 +28,11 @@ const restore = program
   .command('restore')
   .description('Extract, compiled for restored photo library');
 commandsRestore.forEach((command) => restore.addCommand(command));
+
+const duplicate = program
+  .command('duplicate')
+  .description('Extract, compiled for restored photo library');
+commandsDuplicate.forEach((command) => duplicate.addCommand(command));
 
 const utils = program.command('utils').description('Manage checkpoints');
 commandsUtils.forEach((command) => utils.addCommand(command));

@@ -17,6 +17,7 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       exclude: ['node_modules/', 'src/tests/'],
     },
+    // Enable log for test
     env: {
       NODE_ENV: 'test',
     },

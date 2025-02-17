@@ -1,5 +1,5 @@
 import * as E from 'fp-ts/lib/Either.js';
-import { TaskEither } from 'fp-ts/lib/lib/TaskEither.js.js';
+import { TaskEither } from 'fp-ts/lib/TaskEither.js';
 import * as O from 'fp-ts/lib/Option.js';
 
 /**
