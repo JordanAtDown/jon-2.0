@@ -5,14 +5,10 @@ import commandsCatalog from './presentation/commands/catalog/Index.js';
 import commandsRestore from './presentation/commands/restore/Index.js';
 import commandsUtils from './presentation/commands/utils/Index.js';
 import commandsDuplicate from './presentation/commands/duplicate/Index.js';
-import packageJson from '../package.json';
 
 const program = new Command();
 
-program
-  .name('Jon-2.0')
-  .description('Cli for managing photo library')
-  .version(packageJson.version);
+program.name('Jon-2.0').description('Cli for managing photo library');
 
 const checkpoint = program
   .command('checkpoint')
