@@ -127,15 +127,88 @@ const extractPhotoWithStructuredTimestamp: DateExtractor = (filename) => {
   );
 };
 
-const regexEuropeanStyleDateWithTime =
-  /([0-9]{2})-([0-9]{2})-([0-9]{4}) ([0-9]{2})-([0-9]{2})-([0-9]{2})/;
-const extractEuropeanStyleDateWithTime: DateExtractor = (filename) => {
-  const match = filename.match(regexEuropeanStyleDateWithTime);
+const regexImgResizedWithTimestamp =
+  /IMG_([0-9]{4})([0-9]{2})([0-9]{2})_([0-9]{6})([0-9]{3})/;
+const extractImgResizedWithTimestamp: DateExtractor = (filename) => {
+  const match = filename.match(regexImgResizedWithTimestamp);
   return pipe(
     O.fromNullable(match),
-    O.map(([_, day, month, year, hour, minute, second]) =>
+    O.filter(
+      (matches): matches is [string, string, string, string, string, string] =>
+        matches.length === 6 && matches.every((matche) => matche !== undefined),
+    ),
+    O.map(([_, year, month, day, time, _ms]) =>
+      DateTime.fromFormat(`${year}${month}${day}${time}`, 'yyyyMMddHHmmss'),
+    ),
+  );
+};
+
+const regexDashSeparatedDateTime =
+  /([0-9]{4}-[0-9]{2}-[0-9]{2})-([0-9]{2})-([0-9]{2})-([0-9]{2})/;
+const extractDashSeparatedDateTime: DateExtractor = (filename) => {
+  const match = filename.match(regexDashSeparatedDateTime);
+  return pipe(
+    O.fromNullable(match),
+    O.map(([_, date, hour, minute, second]) =>
+      DateTime.fromFormat(
+        `${date}T${hour}:${minute}:${second}`,
+        "yyyy-MM-dd'T'HH:mm:ss",
+      ),
+    ),
+  );
+};
+
+const regexUnderscoreDotDateTime =
+  /([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{2})\.([0-9]{2})\.([0-9]{2})/;
+const extractUnderscoreDotDateTime: DateExtractor = (filename) => {
+  const match = filename.match(regexUnderscoreDotDateTime);
+  return pipe(
+    O.fromNullable(match),
+    O.map(([_, date, hour, minute, second]) =>
+      DateTime.fromFormat(
+        `${date}T${hour}:${minute}:${second}`,
+        "yyyy-MM-dd'T'HH:mm:ss",
+      ),
+    ),
+  );
+};
+
+const regexFrenchDescriptiveDate =
+  /PHOTOS PORTABLE LE ([0-9]{2}) ([0-9]{2}) ([0-9]{4})/;
+const extractFrenchDescriptiveDate: DateExtractor = (filename) => {
+  const match = filename.match(regexFrenchDescriptiveDate);
+  return pipe(
+    O.fromNullable(match),
+    O.map(([_, day, month, year]) =>
+      DateTime.fromFormat(`${year}-${month}-${day}`, 'yyyy-MM-dd'),
+    ),
+  );
+};
+
+const regexScreenshotWithDash =
+  /Screenshot_([0-9]{4})-([0-9]{2})-([0-9]{2})-([0-9]{2})-([0-9]{2})-([0-9]{2})/;
+const extractScreenshotWithDash: DateExtractor = (filename) => {
+  const match = filename.match(regexScreenshotWithDash);
+  return pipe(
+    O.fromNullable(match),
+    O.map(([_, year, month, day, hour, minute, second]) =>
       DateTime.fromFormat(
         `${year}-${month}-${day}T${hour}:${minute}:${second}`,
+        "yyyy-MM-dd'T'HH:mm:ss",
+      ),
+    ),
+  );
+};
+
+const regexSpacedDashDateTime =
+  /([0-9]{4}-[0-9]{2}-[0-9]{2}) ([0-9]{2})-([0-9]{2})-([0-9]{2})/;
+const extractSpacedDashDateTime: DateExtractor = (filename) => {
+  const match = filename.match(regexSpacedDashDateTime);
+  return pipe(
+    O.fromNullable(match),
+    O.map(([_, date, hour, minute, second]) =>
+      DateTime.fromFormat(
+        `${date}T${hour}:${minute}:${second}`,
         "yyyy-MM-dd'T'HH:mm:ss",
       ),
     ),
@@ -165,7 +238,13 @@ const routes: RegexDateExtractor[] = [
     regexPhotoWithStructuredTimestamp,
     extractPhotoWithStructuredTimestamp,
   ),
-  createRoute(regexEuropeanStyleDateWithTime, extractEuropeanStyleDateWithTime),
+
+  createRoute(regexImgResizedWithTimestamp, extractImgResizedWithTimestamp),
+  createRoute(regexDashSeparatedDateTime, extractDashSeparatedDateTime),
+  createRoute(regexUnderscoreDotDateTime, extractUnderscoreDotDateTime),
+  createRoute(regexFrenchDescriptiveDate, extractFrenchDescriptiveDate),
+  createRoute(regexScreenshotWithDash, extractScreenshotWithDash),
+  createRoute(regexSpacedDashDateTime, extractSpacedDashDateTime),
 ];
 
 export default routes;
