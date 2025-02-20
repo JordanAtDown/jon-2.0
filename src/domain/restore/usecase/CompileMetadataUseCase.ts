@@ -1,6 +1,7 @@
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import { pipe } from 'fp-ts/lib/function.js';
 import { fold } from 'fp-ts/lib/Option.js';
+import { Option, isSome, none, some } from 'fp-ts/lib/Option.js';
 import {
   CategorySource,
   CheckpointDetails,
@@ -28,6 +29,7 @@ import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
 import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
 import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
 import { withLogTimingWithParams } from '../../shared/utils/fp/Log.js';
+import { traverseArrayWithConcurrency } from '../../shared/utils/fp/FP.js';
 
 export class CompileMetadataUseCase {
   constructor(
@@ -101,16 +103,19 @@ export class CompileMetadataUseCase {
   ): TE.TaskEither<Error, void> {
     return pipe(
       allPages(total),
-      TE.traverseArray((page) =>
-        this.processPage(
-          page,
-          filter,
-          pageSize,
-          itemTracker,
-          progressTracker,
-          checkpointDetails,
-        ),
-      ),
+      (pages) => {
+        const maxConcurrency = 3;
+        return traverseArrayWithConcurrency(pages, maxConcurrency, (page) =>
+          this.processPage(
+            page,
+            filter,
+            pageSize,
+            itemTracker,
+            progressTracker,
+            checkpointDetails,
+          ),
+        );
+      },
       TE.map(() => void 0),
     );
   }
@@ -135,6 +140,17 @@ export class CompileMetadataUseCase {
           TE.traverseArray((fileMetadata) =>
             this.processMetadata(fileMetadata, itemTracker),
           ),
+          TE.map((compiledFilesOptions) =>
+            compiledFilesOptions.filter(isSome).map((o) => o.value),
+          ),
+          TE.chain((compiledFiles) => {
+            return pipe(
+              this.compiledMetadataRepository.saveAll(compiledFiles),
+              TE.map((compiledFiles) => {
+                return compiledFiles.map((file) => file.fullPath);
+              }),
+            );
+          }),
           TE.chain((compiledFiles) => {
             return pipe(
               this.checkpoint.save({
@@ -157,7 +173,7 @@ export class CompileMetadataUseCase {
   private processMetadata(
     fileMetadata: FileMetadata,
     itemTracker: WrapperMutableItemTracker,
-  ): TE.TaskEither<Error, string> {
+  ): TE.TaskEither<Error, Option<CompiledMetadata>> {
     return pipe(
       fileMetadata.toCompiledDate(
         (name) => extractDate(routes, name),
@@ -170,7 +186,7 @@ export class CompileMetadataUseCase {
               .withId(fileMetadata.fullPath)
               .asNormalItem(ItemState.UNPROCESS),
           );
-          return TE.right('');
+          return TE.right(none);
         },
         (compiledDate: CompiledDate) => {
           return pipe(
@@ -182,33 +198,27 @@ export class CompileMetadataUseCase {
                     .withId(fileMetadata.fullPath)
                     .asNormalItem(ItemState.UNPROCESS),
                 );
-                return TE.right('');
+                return TE.right(none);
               },
               (yearMonth) => {
-                return pipe(
-                  this.compiledMetadataRepository.save(
-                    new CompiledMetadata(
-                      fileMetadata.fullPath,
-                      fileMetadata.getTags((items) =>
-                        this.tagsGenerator.generate(items),
-                      ),
-                      yearMonth.year,
-                      yearMonth.month,
-                      !!fileMetadata.exif,
-                      compiledDate,
-                      fileMetadata.extension,
-                      fileMetadata.type!,
-                    ),
-                  ),
-                  TE.map(() => {
-                    itemTracker.track(
-                      ItemTrackerBuilder.start()
-                        .withId(fileMetadata.fullPath)
-                        .asNormalItem(ItemState.PROCESS),
-                    );
-                    return fileMetadata.fullPath;
-                  }),
+                itemTracker.track(
+                  ItemTrackerBuilder.start()
+                    .withId(fileMetadata.fullPath)
+                    .asNormalItem(ItemState.PROCESS),
                 );
+                const compiledMetadata = new CompiledMetadata(
+                  fileMetadata.fullPath,
+                  fileMetadata.getTags((items) =>
+                    this.tagsGenerator.generate(items),
+                  ),
+                  yearMonth.year,
+                  yearMonth.month,
+                  !!fileMetadata.exif,
+                  compiledDate,
+                  fileMetadata.extension,
+                  fileMetadata.type!,
+                );
+                return TE.right(some(compiledMetadata));
               },
             ),
           );

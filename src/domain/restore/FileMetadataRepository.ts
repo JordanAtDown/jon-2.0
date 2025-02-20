@@ -8,6 +8,9 @@ export type FilterFileMetadata = {
 
 interface FileMetadataRepository {
   save(metadata: FileMetadata): TE.TaskEither<Error, FileMetadata>;
+  saveAll(
+    metadata: Array<FileMetadata>,
+  ): TE.TaskEither<Error, Array<FileMetadata>>;
   getTotalBy(
     filter: FilterFileMetadata,
     pageSize: number,

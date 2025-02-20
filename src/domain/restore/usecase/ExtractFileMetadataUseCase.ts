@@ -1,6 +1,6 @@
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import * as O from 'fp-ts/lib/Option.js';
-import { fold, Option } from 'fp-ts/lib/Option.js';
+import { fold, Option, isSome } from 'fp-ts/lib/Option.js';
 import { pipe } from 'fp-ts/lib/function.js';
 import FileMetadataRepository from '../FileMetadataRepository.js';
 import ExtractFileMetadataCommand from './ExtractFileMetadataCommand.js';
@@ -147,12 +147,17 @@ export class ExtractFileMetadataUseCase {
     return pipe(
       batch,
       TE.traverseArray((file) => this.processFile(file, progress, itemTracker)),
-      TE.map(
-        (filesMetadata) =>
-          new Set(
-            filesMetadata.filter(O.isSome).map((some) => some.value.fullPath),
-          ),
+      TE.map((fileMetadatOptions) =>
+        fileMetadatOptions.filter(isSome).map((o) => o.value),
       ),
+      TE.chain((fileMetadata) => {
+        return pipe(
+          this.fileMetadataRepository.saveAll(fileMetadata),
+          TE.map((compiledFiles) => {
+            return compiledFiles.map((file) => file.fullPath);
+          }),
+        );
+      }),
       TE.chain((ids) =>
         TE.fromTask(() =>
           this.checkpoint.save({
@@ -192,19 +197,11 @@ export class ExtractFileMetadataUseCase {
                 .withId(fileMetadata.fullPath)
                 .asNormalItem(ItemState.PROCESS),
             );
-            return pipe(
-              TE.fromTask(() =>
-                this.fileMetadataRepository.save(fileMetadata)(),
-              ),
-              TE.map(() => O.some(fileMetadata)),
-            );
+            progress.increment();
+            return TE.right(O.some(fileMetadata));
           },
         ),
       ),
-      TE.map((optionFileMetadata) => {
-        progress.increment();
-        return optionFileMetadata;
-      }),
     );
   };
 }

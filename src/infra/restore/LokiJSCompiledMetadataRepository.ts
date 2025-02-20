@@ -31,7 +31,12 @@ class LokiJSCompiledMetadataRepository
       TE.chain((savedEntities) =>
         pipe(
           savedEntities ?? [],
-          (entities) => entities.map(mapCompileMetadataEntityToMetadata),
+          (entities) =>
+            entities.filter(
+              (entity): entity is CompileMetadataEntity => !!entity, // Supprimer les undefined
+            ),
+          (validEntities) =>
+            validEntities.map(mapCompileMetadataEntityToMetadata),
           (domainModels) => TE.of(domainModels),
         ),
       ),

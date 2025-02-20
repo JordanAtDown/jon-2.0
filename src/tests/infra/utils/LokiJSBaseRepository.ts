@@ -44,9 +44,10 @@ export abstract class LokiJSBaseRepository<ENTITY extends Object> {
     });
   }
 
-  addAll(entities: ENTITY[]): TaskEither<Error, ENTITY[] | undefined> {
+  addAll(entities: ENTITY[]): TaskEither<Error, ENTITY[] | undefined[]> {
     return tryCatchTask(async () => {
-      return this.collection.insert(entities);
+      const inserted = this.collection.insert(entities);
+      return Array.isArray(inserted) ? inserted : [inserted];
     });
   }
 

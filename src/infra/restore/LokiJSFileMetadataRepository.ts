@@ -29,6 +29,25 @@ class LokiJSFileMetadataRepository
     super(collection);
   }
 
+  saveAll(
+    metadatas: Array<FileMetadata>,
+  ): TE.TaskEither<Error, Array<FileMetadata>> {
+    return pipe(
+      metadatas.map(mapFileMetadataToFileMetadataEntity),
+      (entities) => this.addAll(entities),
+      TE.chain((savedEntities) =>
+        pipe(
+          savedEntities ?? [],
+          (entities) =>
+            entities.filter((entity): entity is FileMetadataEntity => !!entity),
+          (validEntities) =>
+            validEntities.map(mapFileMetadataEntityToFileMetadata),
+          (domainModels) => TE.of(domainModels),
+        ),
+      ),
+    );
+  }
+
   getPageBy(
     page: number,
     filter: FilterFileMetadata,
