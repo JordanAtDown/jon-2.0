@@ -269,11 +269,11 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
 
     //// Check destination directory
     const expectedFiles = [
-      path.join(destinationDir, '2009', '05', 'IMAGE_2009_05_15-10_00_00.jpg'),
-      path.join(destinationDir, '2010', '05', 'IMAGE_2010_05_15-10_00_00.jpg'),
-      path.join(destinationDir, '2014', '05', 'IMAGE_2014_05_15-10_00_00.jpg'),
-      path.join(destinationDir, '2018', '05', 'IMAGE_2018_05_15-10_00_00.jpg'),
-      path.join(destinationDir, '2023', '05', 'IMAGE_2023_05_15-10_00_00.jpg'),
+      path.join(destinationDir, '2009', '05', 'IMAGE_2009_05_15-10:00:00.jpg'),
+      path.join(destinationDir, '2010', '05', 'IMAGE_2010_05_15-10:00:00.jpg'),
+      path.join(destinationDir, '2014', '05', 'IMAGE_2014_05_15-10:00:00.jpg'),
+      path.join(destinationDir, '2018', '05', 'IMAGE_2018_05_15-10:00:00.jpg'),
+      path.join(destinationDir, '2023', '05', 'IMAGE_2023_05_15-10:00:00.jpg'),
     ];
     const movedFiles = await findFiles(`${destinationDir}/**/*.jpg`);
     expect(movedFiles).toHaveLength(5);
@@ -281,7 +281,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
 
     //// Check EXIF properties on files
     const extract01 = extractExifProperties(
-      '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2018/05/IMAGE_2018_05_15-10_00_00.jpg',
+      '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2018/05/IMAGE_2018_05_15-10:00:00.jpg',
       ['Keywords', 'DateTimeOriginal'],
     );
     const tag01: string[] = ['tag1', 'tag2'];
@@ -294,7 +294,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
     });
 
     const extract02 = extractExifProperties(
-      '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2014/05/IMAGE_2014_05_15-10_00_00.jpg',
+      '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2014/05/IMAGE_2014_05_15-10:00:00.jpg',
       ['Keywords', 'DateTimeOriginal'],
     );
     const tag02: string[] = ['mer', 'voiture'];
@@ -307,7 +307,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
     });
 
     const extract03 = extractExifProperties(
-      '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2010/05/IMAGE_2010_05_15-10_00_00.jpg',
+      '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2010/05/IMAGE_2010_05_15-10:00:00.jpg',
       ['Keywords', 'DateTimeOriginal'],
     );
     const tag03: string[] = ['lego', 'enfant', 'voyages'];
@@ -320,7 +320,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
     });
 
     const extract04 = extractExifProperties(
-      '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2009/05/IMAGE_2009_05_15-10_00_00.jpg',
+      '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2009/05/IMAGE_2009_05_15-10:00:00.jpg',
       ['Keywords', 'DateTimeOriginal'],
     );
     await expectTaskEitherRight(extract04, (exifData: Record<string, any>) => {
@@ -332,7 +332,7 @@ describe('CopyAllFileWithCompileMetadataUseCase', () => {
     });
 
     const extract05 = extractExifProperties(
-      '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2023/05/IMAGE_2023_05_15-10_00_00.jpg',
+      '/home/personnel/developpements/jon-2.0/src/tests/domain/catalog/copy_all_file_with_compile_metadata_usecase/dest/2023/05/IMAGE_2023_05_15-10:00:00.jpg',
       ['Keywords', 'DateTimeOriginal'],
     );
     const tag05: string[] = ['tag1', 'tag2'];

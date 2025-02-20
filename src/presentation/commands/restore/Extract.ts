@@ -35,7 +35,7 @@ export const extract = new Command('extract')
       idCheckpoint: string,
       options: { consoleMode?: boolean },
     ) => {
-      setLogConsoleMode(options.consoleMode || false);
+      setLogConsoleMode(options.consoleMode || true);
       const extractCommandInput = {
         rootDirectory,
         extensions,

@@ -29,7 +29,7 @@ export const compile = new Command('compile')
       idCheckpoint: string,
       options: { consoleMode?: boolean },
     ) => {
-      setLogConsoleMode(options.consoleMode || false);
+      setLogConsoleMode(options.consoleMode || true);
       const compileCommandInput = {
         batchSize,
         idCheckpoint,

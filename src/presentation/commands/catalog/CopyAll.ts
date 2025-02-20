@@ -29,7 +29,7 @@ export const copy = new Command('copy')
       batchSize: string,
       options: { consoleMode?: boolean },
     ) => {
-      setLogConsoleMode(options.consoleMode || false);
+      setLogConsoleMode(options.consoleMode || true);
       const copyCommandInput = {
         destDir: destination,
         idCheckpoint,

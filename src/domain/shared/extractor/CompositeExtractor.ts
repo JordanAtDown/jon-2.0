@@ -31,7 +31,7 @@ const extractStandardMetadata = (filePath: string): FileMetadata => {
     parsedPath.name,
     filePath,
     parsedPath.dir,
-    parsedPath.ext,
+    parsedPath.ext.toLowerCase(),
     getTypeFromExtension(parsedPath.ext),
   );
 };

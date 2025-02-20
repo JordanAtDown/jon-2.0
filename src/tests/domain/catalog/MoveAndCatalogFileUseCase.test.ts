@@ -84,8 +84,8 @@ describe('MoveAndCatalogFileUseCase', () => {
     // THEN
     //// Find files in destination directory
     const expectedFiles = [
-      path.join(DEST_DIR, '2016', '08', 'PHOTO_2016_08_08-19_28_33.jpg'),
-      path.join(DEST_DIR, '2023', '07', 'PHOTO_2023_07_15-12_34_56.jpg'),
+      path.join(DEST_DIR, '2016', '08', 'PHOTO_2016_08_08-19:28:33.jpg'),
+      path.join(DEST_DIR, '2023', '07', 'PHOTO_2023_07_15-12:34:56.jpg'),
     ];
     const files = await findFiles(`${DEST_DIR}/**/*`);
     expect(files.length).toEqual(2);
@@ -93,7 +93,7 @@ describe('MoveAndCatalogFileUseCase', () => {
 
     //// Check EXIF properties
     const extract01 = extractExifProperties(
-      path.join(DEST_DIR, '2016', '08', 'PHOTO_2016_08_08-19_28_33.jpg'),
+      path.join(DEST_DIR, '2016', '08', 'PHOTO_2016_08_08-19:28:33.jpg'),
       ['DateTimeOriginal'],
     );
     await expectTaskEitherRight(extract01, (exifData: Record<string, any>) => {
@@ -103,7 +103,7 @@ describe('MoveAndCatalogFileUseCase', () => {
       );
     });
     const extract02 = extractExifProperties(
-      path.join(DEST_DIR, '2023', '07', 'PHOTO_2023_07_15-12_34_56.jpg'),
+      path.join(DEST_DIR, '2023', '07', 'PHOTO_2023_07_15-12:34:56.jpg'),
       ['DateTimeOriginal'],
     );
     await expectTaskEitherRight(extract02, (exifData: Record<string, any>) => {

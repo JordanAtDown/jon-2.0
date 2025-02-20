@@ -215,6 +215,18 @@ const extractSpacedDashDateTime: DateExtractor = (filename) => {
   );
 };
 
+const regexIMGWithHyphenDate = /IMG-([0-9]{8})-WA[0-9]{4}/;
+const extractIMGWithHyphenDate: DateExtractor = (filename) => {
+  const match = filename.match(regexIMGWithHyphenDate);
+  return pipe(
+    O.fromNullable(match),
+    O.filter(
+      (matches): matches is [string, string] => matches[1] !== undefined,
+    ),
+    O.map(([_, date]) => DateTime.fromFormat(date, 'yyyyMMdd')),
+  );
+};
+
 const routes: RegexDateExtractor[] = [
   createRoute(
     regexImageOrVideoWithDateAndTime,
@@ -245,6 +257,7 @@ const routes: RegexDateExtractor[] = [
   createRoute(regexFrenchDescriptiveDate, extractFrenchDescriptiveDate),
   createRoute(regexScreenshotWithDash, extractScreenshotWithDash),
   createRoute(regexSpacedDashDateTime, extractSpacedDashDateTime),
+  createRoute(regexIMGWithHyphenDate, extractIMGWithHyphenDate),
 ];
 
 export default routes;

@@ -9,7 +9,7 @@ const buildFilenameWithFormat = (
   format
     .replace('{type}', type)
     .replace('{date}', date.toFormat('yyyy_MM_dd'))
-    .replace('{time}', date.toFormat('HH_mm_ss'))
+    .replace('{time}', date.toFormat('HH:mm:ss'))
     .replace('{extension}', extension);
 
 export default buildFilenameWithFormat;
