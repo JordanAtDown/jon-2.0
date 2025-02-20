@@ -9,8 +9,6 @@ import CopyAllFileWithCompileMetadataCommand from './CopyAllFileWithCompileMetad
 import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
 import buildFilenameWithFormat from '../../shared/filesystem/BuildFilenameWithFormat.js';
 import { buildDirectoryPath } from '../../shared/filesystem/BuildDirectoryPath.js';
-import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
-import ProgressTracker from '../../shared/tracker/ProgressTracker.js';
 import { ExifPropertyBuilder } from '../../shared/exif/ExifProperty.js';
 import {
   validateDateTime,
@@ -25,11 +23,8 @@ import {
 import { DateTime } from 'luxon';
 import { filesystemApply } from '../../shared/filesystem/FilesystemApply.js';
 import { isNone } from 'fp-ts/lib/Option.js';
-import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
 import { NumberPage } from '../../../tests/infra/utils/LokiJSBaseRepository.js';
 import { allPages } from '../../shared/utils/batch/GeneratePageNumbers.js';
-import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
-import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
 import { withLogTimingWithParams } from '../../shared/utils/fp/Log.js';
 
 class CopyAllFileWithCompileMetadataUseCase {
@@ -65,15 +60,6 @@ class CopyAllFileWithCompileMetadataUseCase {
                 {},
                 command.batchSize,
                 checkpointDetails,
-                new WrapperMutableItemTracker(
-                  ItemTracker.init(command.itemCallback),
-                ),
-                new WrapperMutableProgressTracker(
-                  ProgressTracker.init(
-                    numberPage.totalItem - checkpointDetails.processed.size,
-                    command.progressCallback,
-                  ),
-                ),
               ),
             ),
           ),
@@ -87,8 +73,6 @@ class CopyAllFileWithCompileMetadataUseCase {
     filter: FilterCompiledMetadata,
     pageSize: number,
     checkpointDetails: CheckpointDetails,
-    itemTracker: WrapperMutableItemTracker,
-    progressTracker: WrapperMutableProgressTracker,
   ): TE.TaskEither<Error, void> {
     return pipe(
       allPages(numberPage.totalPages),
@@ -99,8 +83,6 @@ class CopyAllFileWithCompileMetadataUseCase {
           page,
           pageSize,
           checkpointDetails,
-          itemTracker,
-          progressTracker,
         ),
       ),
       TE.map(() => void 0),
@@ -113,8 +95,6 @@ class CopyAllFileWithCompileMetadataUseCase {
     pageNumber: number,
     batchSize: number,
     checkpointDetails: CheckpointDetails,
-    itemTracker: WrapperMutableItemTracker,
-    progressTracker: WrapperMutableProgressTracker,
   ): TE.TaskEither<Error, void> => {
     return pipe(
       this.compiledMetadataRepository.getPageBy(filter, pageNumber, batchSize),
@@ -129,8 +109,6 @@ class CopyAllFileWithCompileMetadataUseCase {
           destinationDir,
           compiledMetadatas,
           checkpointDetails,
-          itemTracker,
-          progressTracker,
         );
       }),
     );
@@ -140,8 +118,6 @@ class CopyAllFileWithCompileMetadataUseCase {
     destinationDir: string,
     metadatas: CompiledMetadata[],
     checkpointDetails: CheckpointDetails,
-    itemTracker: WrapperMutableItemTracker,
-    progressTracker: WrapperMutableProgressTracker,
   ): TE.TaskEither<Error, void> => {
     return pipe(
       metadatas,
@@ -149,11 +125,6 @@ class CopyAllFileWithCompileMetadataUseCase {
         const date = metadata.date.getDate();
 
         if (isNone(date)) {
-          itemTracker.track(
-            ItemTrackerBuilder.start()
-              .withId(metadata.fullPath)
-              .asNormalItem(ItemState.UNPROCESS),
-          );
           return TE.right(void 0);
         }
 
@@ -186,7 +157,6 @@ class CopyAllFileWithCompileMetadataUseCase {
           filepath: metadata.fullPath,
           destPath: destinationPath,
           exifProperties: exifProperties,
-          itemTracker: itemTracker,
         };
         return pipe(
           filesystemApply(fileSystemApplyCommand),
@@ -200,7 +170,7 @@ class CopyAllFileWithCompileMetadataUseCase {
                 source: checkpointDetails.source,
               }),
               TE.map(() => {
-                progressTracker.increment();
+                void 0;
               }),
             );
           }),

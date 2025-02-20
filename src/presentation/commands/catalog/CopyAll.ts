@@ -13,8 +13,6 @@ import { metadataRepositoryStep } from '../_step/MetadataRepositoryStep.js';
 import { copyAllStep } from './_step/CopyAllStep.js';
 import { setLogConsoleMode } from '../utils/Logger.js';
 import { closeDB } from '../utils/CloseDB.js';
-import { onItemTrackLog } from '../_components/OnItemTrackLog.js';
-import { onProgressLog } from '../_components/OnProgressLog.js';
 
 export const copy = new Command('copy')
   .description('Copy all files with compiled metadata to new path')
@@ -85,8 +83,6 @@ const pipeline = (input: CopyCommandInput): TE.TaskEither<Error, void> => {
           destinationDir: input.destDir,
           idCheckpoint: input.idCheckpoint,
           batchSize: parseInt(input.batchSize, 10),
-          progressCallback: onProgressLog,
-          itemCallback: onItemTrackLog,
         })(),
         TE.map(() => dbConfig),
       ),

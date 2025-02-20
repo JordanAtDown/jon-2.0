@@ -4,7 +4,6 @@ import { fold, Option, isSome } from 'fp-ts/lib/Option.js';
 import { pipe } from 'fp-ts/lib/function.js';
 import FileMetadataRepository from '../FileMetadataRepository.js';
 import ExtractFileMetadataCommand from './ExtractFileMetadataCommand.js';
-import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
 import { filterItems } from '../../shared/utils/fp/FP.js';
 import FileMetadata from '../../sharedkernel/metadata/FileMetadata.js';
 import safeExtract from '../../shared/extractor/SafeExtract.js';
@@ -18,12 +17,8 @@ import {
 } from '../../sharedkernel/checkpoint/CheckpointData.js';
 import FileScanner from '../../shared/filesystem/FileScanner.js';
 import Extractor from '../../shared/extractor/Extractor.js';
-import ProgressTracker from '../../shared/tracker/ProgressTracker.js';
 import { batchArray } from '../../shared/utils/batch/BatchArray.js';
 import buildPatterns from '../../shared/filesystem/BuildPattern.js';
-import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
-import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
-import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
 import { withLogTimingWithParams } from '../../shared/utils/fp/Log.js';
 
 export class ExtractFileMetadataUseCase {
@@ -58,20 +53,12 @@ export class ExtractFileMetadataUseCase {
           command.idCheckpoint,
         ),
         TE.map((files) => {
-          const progress = new WrapperMutableProgressTracker(
-            ProgressTracker.init(files.length, command.progress),
-          );
-          const itemTracker = new WrapperMutableItemTracker(
-            ItemTracker.init(command.itemCallback),
-          );
           const batches = batchArray(files, command.batchSize);
-          return { batches, progress, itemTracker: itemTracker };
+          return { batches };
         }),
-        TE.chain(({ batches, progress, itemTracker }) =>
+        TE.chain(({ batches }) =>
           this.processBatches(
             batches,
-            progress,
-            itemTracker,
             command.idCheckpoint,
             command.rootDirectory,
           ),
@@ -124,14 +111,12 @@ export class ExtractFileMetadataUseCase {
 
   private processBatches = (
     batches: string[][],
-    progress: WrapperMutableProgressTracker,
-    itemTracker: WrapperMutableItemTracker,
     idCheckpoint: string,
     rootDir: string,
   ): TE.TaskEither<Error, void> => {
     return pipe(
       TE.traverseArray((batch: string[]) =>
-        this.processBatch(batch, rootDir, progress, itemTracker, idCheckpoint),
+        this.processBatch(batch, rootDir, idCheckpoint),
       )(batches),
       TE.map(() => void 0),
     );
@@ -140,13 +125,11 @@ export class ExtractFileMetadataUseCase {
   private processBatch = (
     batch: string[],
     rootDir: string,
-    progress: WrapperMutableProgressTracker,
-    itemTracker: WrapperMutableItemTracker,
     idCheckpoint: string,
   ): TE.TaskEither<Error, void> => {
     return pipe(
       batch,
-      TE.traverseArray((file) => this.processFile(file, progress, itemTracker)),
+      TE.traverseArray((file) => this.processFile(file)),
       TE.map((fileMetadatOptions) =>
         fileMetadatOptions.filter(isSome).map((o) => o.value),
       ),
@@ -175,29 +158,16 @@ export class ExtractFileMetadataUseCase {
 
   private processFile = (
     filePath: string,
-    progress: WrapperMutableProgressTracker,
-    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, Option<FileMetadata>> => {
     return pipe(
-      safeExtract(compositeExtractor(this.extractors), filePath, itemTracker),
+      safeExtract(compositeExtractor(this.extractors), filePath),
       TE.fromTask,
       TE.chain(
         fold(
           () => {
-            itemTracker.track(
-              ItemTrackerBuilder.start()
-                .withId(filePath)
-                .asNormalItem(ItemState.UNPROCESS),
-            );
             return TE.right(O.none);
           },
           (fileMetadata) => {
-            itemTracker.track(
-              ItemTrackerBuilder.start()
-                .withId(fileMetadata.fullPath)
-                .asNormalItem(ItemState.PROCESS),
-            );
-            progress.increment();
             return TE.right(O.some(fileMetadata));
           },
         ),

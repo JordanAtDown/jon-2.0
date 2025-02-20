@@ -83,7 +83,6 @@ export class MoveAndCatalogFileUseCase {
         safeExtract(
           compositeExtractor([DateTimeOriginal, ...this.extractors]),
           filePath,
-          itemTracker,
         ),
       ),
       TE.map((optionFileMetadata: Option<FileMetadata>) =>

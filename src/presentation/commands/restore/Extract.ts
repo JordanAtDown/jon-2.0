@@ -13,9 +13,7 @@ import {
 import { ExtractMetadataStep } from './_step/ExtractMetadataStep.js';
 import ExtractFileMetadataCommand from '../../../domain/restore/usecase/ExtractFileMetadataCommand.js';
 import { closeDB } from '../utils/CloseDB.js';
-import { onItemTrackLog } from '../_components/OnItemTrackLog.js';
 import { setLogConsoleMode } from '../utils/Logger.js';
-import { onProgressLog } from '../_components/OnProgressLog.js';
 
 export const extract = new Command('extract')
   .description('Extract metadata from files in a directory')
@@ -94,8 +92,6 @@ const Pipeline = (extractCommandInput: ExtractCommandInput) =>
                 extensions: context.validInput.extensions.split(','),
                 batchSize: parseInt(context.validInput.batchSize, 10),
                 idCheckpoint: context.validInput.idCheckpoint,
-                progress: onProgressLog,
-                itemCallback: onItemTrackLog,
               };
 
               return pipe(

@@ -3,17 +3,13 @@ import { pipe } from 'fp-ts/lib/function.js';
 import moveFile from './MoveFile.js';
 import { ExifProperty } from '../exif/ExifProperty.js';
 import { Either, right, left } from 'fp-ts/lib/Either.js';
-import { ItemState } from '../tracker/ItemTracker.js';
-import { ItemTrackerBuilder } from '../tracker/ItemTrackBuilder.js';
 import { validateExifProperties } from '../exif/validation/Validations.js';
 import exifApplyTo from '../exif/ExifWriting.js';
-import WrapperMutableItemTracker from '../tracker/WrapperMutableItemTracker.js';
 
 type FilesystemApplyCommand = {
   filepath: string;
   destPath: string;
   exifProperties: ExifProperty<any>[];
-  itemTracker: WrapperMutableItemTracker;
 };
 
 type WithDestPath = FilesystemApplyCommand & {
@@ -26,14 +22,6 @@ const check = (
   const validationErrors = validateExifProperties(command.exifProperties);
 
   if (validationErrors.length > 0) {
-    validationErrors.forEach((validationError) => {
-      command.itemTracker.track(
-        ItemTrackerBuilder.start()
-          .withId(command.filepath)
-          .asErrorItem(validationError.message)
-          .build(),
-      );
-    });
     return left(
       new Error(
         `EXIF_VALIDATION_ERROR: CAN'T VALIDATE FILE ${command.filepath}`,
@@ -53,13 +41,7 @@ const move = (
       ...command,
       destinationPath: destinationPath.path,
     })),
-    TE.mapLeft((error) => {
-      command.itemTracker.track(
-        ItemTrackerBuilder.start()
-          .withId(command.filepath)
-          .asErrorItem(String(error.message))
-          .build(),
-      );
+    TE.mapLeft((_error) => {
       return new Error(
         `FAILED_MOVING_FILE: CAN'T MOVE FILE ${command.filepath}`,
       );
@@ -73,13 +55,7 @@ const exif = (
   return pipe(
     exifApplyTo(command.filepath, command.exifProperties),
     TE.map(() => command),
-    TE.mapLeft((error: Error) => {
-      command.itemTracker.track(
-        ItemTrackerBuilder.start()
-          .withId(command.filepath)
-          .asErrorItem(error.message)
-          .build(),
-      );
+    TE.mapLeft((_error: Error) => {
       return new Error(
         `FAILED_APPLY_EXIF: CAN'T APPLY EXIF ON FILE ${command.filepath}`,
       );
@@ -87,14 +63,9 @@ const exif = (
   );
 };
 
-const track = (withDestPath: WithDestPath): TE.TaskEither<Error, void> => {
+const track = (_withDestPath: WithDestPath): TE.TaskEither<Error, void> => {
   return TE.tryCatch(
     () => {
-      withDestPath.itemTracker.track(
-        ItemTrackerBuilder.start()
-          .withId(withDestPath.destinationPath)
-          .asNormalItem(ItemState.PROCESS),
-      );
       return Promise.resolve();
     },
     (reason) =>
