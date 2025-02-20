@@ -15,8 +15,6 @@ import { metadataCompileRepositoryStep } from '../_step/MetadataCompileRepositor
 import { checkpointRepositoryStep } from '../_step/CheckpointRepositoryStep.js';
 import { loadDictionariesStep } from '../_step/LoadDictionariesStep.js';
 import { CompileMetadataUseCaseCommand } from '../../../domain/restore/usecase/CompileMetadataUseCaseCommand.js';
-import { onItemTrackLog } from '../_components/OnItemTrackLog.js';
-import { onProgressLog } from '../_components/OnProgressLog.js';
 
 export const compile = new Command('compile')
   .description('Compile metadata using the defined pipeline')
@@ -98,8 +96,6 @@ const Pipeline = (compileCommandInput: {
                 const compileCommand: CompileMetadataUseCaseCommand = {
                   batchSize: Number(compileCommandInput.batchSize),
                   idCheckpoint: compileCommandInput.idCheckpoint,
-                  progressCallback: onProgressLog,
-                  itemCallback: onItemTrackLog,
                 };
 
                 const compileDependencies = {

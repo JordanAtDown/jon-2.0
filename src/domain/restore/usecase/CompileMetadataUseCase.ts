@@ -14,20 +14,15 @@ import FileMetadataRepository, {
 import { CompiledMetadataRepository } from '../CompiledMetadataRepository.js';
 import TagsGenerator from '../../shared/tag/TagsGenerator.js';
 import { CompileMetadataUseCaseCommand } from './CompileMetadataUseCaseCommand.js';
-import ProgressTracker from '../../shared/tracker/ProgressTracker.js';
 import FileMetadata from '../../sharedkernel/metadata/FileMetadata.js';
 import { extractDate } from '../../shared/regex/ExtractDate.js';
 import routes from '../../shared/regex/Routes.js';
-import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
 import CompiledMetadata from '../../sharedkernel/metadata/CompiledMetadata.js';
 import CompiledDate from '../../sharedkernel/metadata/CompiledDate.js';
 import { allPages } from '../../shared/utils/batch/GeneratePageNumbers.js';
 import Checkpoint from '../../sharedkernel/checkpoint/Checkpoint.js';
 import { DateTime } from 'luxon';
 import DateGenerator from '../../shared/tag/DateGenerator.js';
-import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
-import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
-import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
 import { withLogTimingWithParams } from '../../shared/utils/fp/Log.js';
 import { traverseArrayWithConcurrency } from '../../shared/utils/fp/FP.js';
 
@@ -76,15 +71,6 @@ export class CompileMetadataUseCase {
                 {},
                 command.batchSize,
                 checkpointDetails,
-                new WrapperMutableItemTracker(
-                  ItemTracker.init(command.itemCallback),
-                ),
-                new WrapperMutableProgressTracker(
-                  ProgressTracker.init(
-                    numberPage.totalItem - checkpointDetails.processed.size,
-                    command.progressCallback,
-                  ),
-                ),
               ),
             ),
           ),
@@ -98,22 +84,13 @@ export class CompileMetadataUseCase {
     filter: FilterFileMetadata,
     pageSize: number,
     checkpointDetails: CheckpointDetails,
-    itemTracker: WrapperMutableItemTracker,
-    progressTracker: WrapperMutableProgressTracker,
   ): TE.TaskEither<Error, void> {
     return pipe(
       allPages(total),
       (pages) => {
         const maxConcurrency = 3;
         return traverseArrayWithConcurrency(pages, maxConcurrency, (page) =>
-          this.processPage(
-            page,
-            filter,
-            pageSize,
-            itemTracker,
-            progressTracker,
-            checkpointDetails,
-          ),
+          this.processPage(page, filter, pageSize, checkpointDetails),
         );
       },
       TE.map(() => void 0),
@@ -124,8 +101,6 @@ export class CompileMetadataUseCase {
     page: number,
     filter: FilterFileMetadata,
     batchSize: number,
-    itemTracker: WrapperMutableItemTracker,
-    progressTracker: WrapperMutableProgressTracker,
     checkpoint: CheckpointDetails,
   ): TE.TaskEither<Error, void> {
     return pipe(
@@ -138,7 +113,7 @@ export class CompileMetadataUseCase {
         return pipe(
           neverProcessFileMetadata,
           TE.traverseArray((fileMetadata) =>
-            this.processMetadata(fileMetadata, itemTracker),
+            this.processMetadata(fileMetadata),
           ),
           TE.map((compiledFilesOptions) =>
             compiledFilesOptions.filter(isSome).map((o) => o.value),
@@ -161,7 +136,7 @@ export class CompileMetadataUseCase {
                 source: checkpoint.source,
               }),
               TE.map(() => {
-                progressTracker.increment();
+                void 0;
               }),
             );
           }),
@@ -172,7 +147,6 @@ export class CompileMetadataUseCase {
 
   private processMetadata(
     fileMetadata: FileMetadata,
-    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, Option<CompiledMetadata>> {
     return pipe(
       fileMetadata.toCompiledDate(
@@ -181,11 +155,6 @@ export class CompileMetadataUseCase {
       ),
       fold(
         () => {
-          itemTracker.track(
-            ItemTrackerBuilder.start()
-              .withId(fileMetadata.fullPath)
-              .asNormalItem(ItemState.UNPROCESS),
-          );
           return TE.right(none);
         },
         (compiledDate: CompiledDate) => {
@@ -193,19 +162,9 @@ export class CompileMetadataUseCase {
             compiledDate.getYearMonth(),
             fold(
               () => {
-                itemTracker.track(
-                  ItemTrackerBuilder.start()
-                    .withId(fileMetadata.fullPath)
-                    .asNormalItem(ItemState.UNPROCESS),
-                );
                 return TE.right(none);
               },
               (yearMonth) => {
-                itemTracker.track(
-                  ItemTrackerBuilder.start()
-                    .withId(fileMetadata.fullPath)
-                    .asNormalItem(ItemState.PROCESS),
-                );
                 const compiledMetadata = new CompiledMetadata(
                   fileMetadata.fullPath,
                   fileMetadata.getTags((items) =>

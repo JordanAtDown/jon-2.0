@@ -150,8 +150,6 @@ describe('CompileMetadataUseCase', () => {
     const command: CompileMetadataUseCaseCommand = {
       idCheckpoint: 'checkpoint-1',
       batchSize: 2,
-      progressCallback: () => {},
-      itemCallback: () => {},
     };
 
     // WHEN

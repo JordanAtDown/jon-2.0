@@ -129,7 +129,7 @@ async function createLogger(
 const mode: LoggerMode =
   (process.env['NODE_ENV'] as LoggerMode) || LoggerMode.DEV;
 
-const level: Level = (process.env['LEVEL'] as Level) || Level.INFO;
+const level: Level = (process.env['LEVEL'] as Level) || Level.WARN;
 
 let logConsoleMode = false;
 
