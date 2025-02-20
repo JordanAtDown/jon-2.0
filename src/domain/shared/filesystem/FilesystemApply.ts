@@ -5,6 +5,7 @@ import { ExifProperty } from '../exif/ExifProperty.js';
 import { Either, right, left } from 'fp-ts/lib/Either.js';
 import { validateExifProperties } from '../exif/validation/Validations.js';
 import exifApplyTo from '../exif/ExifWriting.js';
+import Logger from '../../../presentation/commands/utils/Logger.js';
 
 type FilesystemApplyCommand = {
   filepath: string;
@@ -42,6 +43,7 @@ const move = (
       destinationPath: destinationPath.path,
     })),
     TE.mapLeft((_error) => {
+      Logger.error(_error.message);
       return new Error(
         `FAILED_MOVING_FILE: CAN'T MOVE FILE ${command.filepath}`,
       );
@@ -56,6 +58,7 @@ const exif = (
     exifApplyTo(command.filepath, command.exifProperties),
     TE.map(() => command),
     TE.mapLeft((_error: Error) => {
+      Logger.error(_error.message);
       return new Error(
         `FAILED_APPLY_EXIF: CAN'T APPLY EXIF ON FILE ${command.filepath}`,
       );
