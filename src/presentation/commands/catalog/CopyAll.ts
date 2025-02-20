@@ -11,57 +11,44 @@ import { dbReadyStep } from '../_step/DBReadyStep.js';
 import { checkpointRepositoryStep } from '../_step/CheckpointRepositoryStep.js';
 import { metadataRepositoryStep } from '../_step/MetadataRepositoryStep.js';
 import { copyAllStep } from './_step/CopyAllStep.js';
-import { DateTime } from 'luxon';
-import Logger from '../utils/Logger.js';
-import { initializeUIStep } from '../_step/InitializeUIStep.js';
+import { setLogConsoleMode } from '../utils/Logger.js';
 import { closeDB } from '../utils/CloseDB.js';
+import { onItemTrackLog } from '../_components/OnItemTrackLog.js';
+import { onProgressLog } from '../_components/OnProgressLog.js';
 
-const commandName = 'Copy All';
 export const copy = new Command('copy')
   .description('Copy all files with compiled metadata to new path')
   .argument('<destination>', 'destination directory')
   .argument('<idCheckpoint>', 'identifier checkpoint')
   .argument('<batchSize>', 'size of the batch')
-  .action((destination: string, idCheckpoint: string, batchSize: string) => {
-    const startTime = DateTime.now();
-    Logger.info(
-      `Début de l'exécution à : ${startTime.toFormat('dd-MM-yyyy HH:mm:ss')}`,
-    );
-    Logger.info(`Command: ${commandName}`);
-    Logger.info(`Params - destination dir: ${destination}`);
-    Logger.info(`Params - checkpoint: ${idCheckpoint}`);
-    Logger.info(`Params - batch size: ${batchSize}`);
+  .option('--console-mode', 'enable console log mode')
+  .action(
+    (
+      destination: string,
+      idCheckpoint: string,
+      batchSize: string,
+      options: { consoleMode?: boolean },
+    ) => {
+      setLogConsoleMode(options.consoleMode || false);
+      const copyCommandInput = {
+        destDir: destination,
+        idCheckpoint,
+        batchSize,
+      };
 
-    const copyCommandInput = {
-      destDir: destination,
-      idCheckpoint,
-      batchSize,
-    };
-
-    pipe(
-      pipeline(copyCommandInput),
-      TE.match(
-        (error: Error) => {
-          Logger.error(
-            `Une erreur est survenue : ${error.message || 'Erreur inconnue'}`,
-          );
-          console.error(error.message);
-        },
-        () => {
-          Logger.info('Pipeline exécuté avec succès !');
-        },
-      ),
-    )();
-
-    const endTime = DateTime.now();
-    const durationMillis = endTime.diff(startTime).toMillis();
-    const durationSecs = (durationMillis / 1000).toFixed(2);
-
-    Logger.info(
-      `Fin de l'exécution : ${endTime.toFormat('dd-MM-yyyy HH:mm:ss')}`,
-    );
-    Logger.info(`Durée totale de l'exécution : ${durationSecs} secondes`);
-  });
+      pipe(
+        pipeline(copyCommandInput),
+        TE.match(
+          (error: Error) => {
+            console.error(error.message);
+          },
+          () => {
+            console.info('Success');
+          },
+        ),
+      )();
+    },
+  );
 
 const pipeline = (input: CopyCommandInput): TE.TaskEither<Error, void> => {
   return pipe(
@@ -76,38 +63,30 @@ const pipeline = (input: CopyCommandInput): TE.TaskEither<Error, void> => {
     ),
     TE.chain((dbConfig) =>
       pipe(
-        initializeUIStep(),
-        TE.map((trackingCallbacks) => ({ dbConfig, trackingCallbacks })),
-      ),
-    ),
-    TE.chain(({ dbConfig, trackingCallbacks }) =>
-      pipe(
         checkpointRepositoryStep(dbConfig),
         TE.map((checkpointRepository) => ({
           dbConfig,
           checkpointRepository,
-          trackingCallbacks,
         })),
       ),
     ),
-    TE.chain(({ dbConfig, checkpointRepository, trackingCallbacks }) =>
+    TE.chain(({ dbConfig, checkpointRepository }) =>
       pipe(
         metadataRepositoryStep(dbConfig),
         TE.map((metadataRepository) => ({
           dbConfig,
           dependencies: { checkpointRepository, metadataRepository },
-          trackingCallbacks,
         })),
       ),
     ),
-    TE.chain(({ dbConfig, dependencies, trackingCallbacks }) =>
+    TE.chain(({ dbConfig, dependencies }) =>
       pipe(
         copyAllStep(dependencies, {
           destinationDir: input.destDir,
           idCheckpoint: input.idCheckpoint,
           batchSize: parseInt(input.batchSize, 10),
-          progressCallback: trackingCallbacks.onProgressUpdateCallback,
-          itemCallback: trackingCallbacks.onItemTrackCallback,
+          progressCallback: onProgressLog,
+          itemCallback: onItemTrackLog,
         })(),
         TE.map(() => dbConfig),
       ),

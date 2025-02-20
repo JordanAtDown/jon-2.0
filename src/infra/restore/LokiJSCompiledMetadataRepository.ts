@@ -22,6 +22,22 @@ class LokiJSCompiledMetadataRepository
     super(collection);
   }
 
+  saveAll(
+    metadatas: CompiledMetadata[],
+  ): TE.TaskEither<Error, CompiledMetadata[]> {
+    return pipe(
+      metadatas.map(mapCompiledMetadataToCompileMetadataEntity),
+      (entities) => this.addAll(entities),
+      TE.chain((savedEntities) =>
+        pipe(
+          savedEntities ?? [],
+          (entities) => entities.map(mapCompileMetadataEntityToMetadata),
+          (domainModels) => TE.of(domainModels),
+        ),
+      ),
+    );
+  }
+
   save(metadata: CompiledMetadata): TE.TaskEither<Error, CompiledMetadata> {
     return pipe(
       TE.of(mapCompiledMetadataToCompileMetadataEntity(metadata)),

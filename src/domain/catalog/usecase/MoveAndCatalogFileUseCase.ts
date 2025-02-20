@@ -25,6 +25,7 @@ import compositeExtractor from '../../shared/extractor/CompositeExtractor.js';
 import buildFilenameWithFormat from '../../shared/filesystem/BuildFilenameWithFormat.js';
 import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
 import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
+import { withLogTimingWithParams } from '../../shared/utils/fp/Log.js';
 
 export class MoveAndCatalogFileUseCase {
   constructor(
@@ -50,21 +51,27 @@ export class MoveAndCatalogFileUseCase {
   public moveAndCatalogFile = (
     command: MoveAndCatalogFileCommand,
   ): TE.TaskEither<Error, void> =>
-    pipe(
-      this.fileScanner.scanFiles(
-        command.rootDirectory,
-        buildPatterns(command.extensions),
+    withLogTimingWithParams(
+      'Move and Catalog Files',
+      command,
+      pipe(
+        this.fileScanner.scanFiles(
+          command.rootDirectory,
+          buildPatterns(command.extensions),
+        ),
+        TE.chain((files) => {
+          return this.processBatches(
+            batchArray(files, command.batchSize),
+            command.destinationDirectory,
+            new WrapperMutableProgressTracker(
+              ProgressTracker.init(files.length, command.progress),
+            ),
+            new WrapperMutableItemTracker(
+              ItemTracker.init(command.itemCallback),
+            ),
+          );
+        }),
       ),
-      TE.chain((files) => {
-        return this.processBatches(
-          batchArray(files, command.batchSize),
-          command.destinationDirectory,
-          new WrapperMutableProgressTracker(
-            ProgressTracker.init(files.length, command.progress),
-          ),
-          new WrapperMutableItemTracker(ItemTracker.init(command.itemCallback)),
-        );
-      }),
     );
 
   private extractFilepath = (

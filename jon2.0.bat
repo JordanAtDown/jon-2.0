@@ -14,4 +14,5 @@ if not exist "%NODE_BIN%" (
 
 :: Exécution de la CLI avec Node.js embarqué
 set NODE_ENV=production
+set LEVEL=info
 "%NODE_BIN%" "%DIR%dist\cli.js" %*

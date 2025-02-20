@@ -15,18 +15,13 @@ export abstract class LokiJSBaseRepository<ENTITY extends Object> {
   protected constructor(collection: Collection<ENTITY>) {
     this.collection = collection;
 
-    Logger.info(
+    Logger.debug(
       `Repository for collection '${this.collection.name}' has been successfully initialized.`,
     );
   }
 
   find(filter: LokiQuery<ENTITY & LokiObj>): TaskEither<Error, ENTITY[]> {
     return tryCatchTask(async () => {
-      const allItems = this.collection.find({});
-      Logger.debug(
-        `Collection contents (${allItems.length} items):\n`,
-        JSON.stringify(allItems, null, 2),
-      );
       return this.collection.find(filter);
     });
   }
@@ -110,7 +105,11 @@ export abstract class LokiJSBaseRepository<ENTITY extends Object> {
       if (pageSize <= 0) {
         throw new Error('INVALID_PAGE_SIZE: must be greater than 0.');
       }
-      const totalCount = this.collection.chain().find(filter).count();
+      const totalCount =
+        filter && Object.keys(filter).length > 0
+          ? this.collection.find(filter).length
+          : this.collection.data.length;
+
       return {
         totalPages: Math.ceil(totalCount / pageSize),
         totalItem: totalCount,

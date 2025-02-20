@@ -20,6 +20,7 @@ export default defineConfig({
     // Enable log for test
     env: {
       NODE_ENV: 'test',
+      LEVEL: 'warn',
     },
   },
 });

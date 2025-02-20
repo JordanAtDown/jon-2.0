@@ -32,7 +32,7 @@ const moveFile = (
 const getUniqueFilePath = (filePath: string, suffix: number): string => {
   const dir = path.dirname(filePath);
   const ext = path.extname(filePath);
-  const baseName = path.basename(filePath, ext);
+  const baseName = path.basename(filePath, ext).replace(/_\d+$/, '');
   return path.join(dir, `${baseName}_${suffix}${ext}`);
 };
 

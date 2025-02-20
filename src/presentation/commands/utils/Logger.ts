@@ -11,6 +11,15 @@ export enum LoggerMode {
   TEST = 'test',
 }
 
+export enum Level {
+  SILLY = 'silly',
+  DEBUG = 'debug',
+  VERBOSE = 'verbose',
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error',
+}
+
 const ensureDirectoryExists = (dir: string): void => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -56,14 +65,20 @@ function resolveLogFilePath(mode: LoggerMode): TE.TaskEither<Error, string> {
  * Creates and configures the Winston logger based on the execution mode.
  *
  * @param {LoggerMode} mode - Execution mode (dev, production, test).
+ * @param {Level} level - Level
+ * @param enableConsole - Enable console mode
  * @returns {Promise<winston.Logger>} The configured logger.
  */
-async function createLogger(mode: LoggerMode): Promise<winston.Logger> {
+async function createLogger(
+  mode: LoggerMode,
+  level: Level,
+  enableConsole: boolean = false,
+): Promise<winston.Logger> {
   const resolveLogPathTask = resolveLogFilePath(mode);
 
   return TE.match(
     (error: Error) => {
-      console.error(`Erreur de résolution du chemin de log : ${error.message}`);
+      console.error(`Log path resolution error : ${error.message}`);
       return winston.createLogger({
         level: 'silent',
       });
@@ -85,8 +100,23 @@ async function createLogger(mode: LoggerMode): Promise<winston.Logger> {
         }),
       );
 
+      if (enableConsole) {
+        loggerTransports.push(
+          new transports.Console({
+            format: format.combine(
+              format.uncolorize(),
+              format.json(),
+              format.printf(
+                (info) =>
+                  `[${info['timestamp']}] [${info.level.toUpperCase()}]: ${info.message}`,
+              ),
+            ),
+          }),
+        );
+      }
+
       return winston.createLogger({
-        level: mode === LoggerMode.TEST ? 'warn' : 'debug',
+        level: level,
         format: format.combine(
           format.timestamp({ format: 'DD-MM-YYYY HH:mm:ss' }),
         ),
@@ -99,6 +129,14 @@ async function createLogger(mode: LoggerMode): Promise<winston.Logger> {
 const mode: LoggerMode =
   (process.env['NODE_ENV'] as LoggerMode) || LoggerMode.DEV;
 
-const Logger = await createLogger(mode);
+const level: Level = (process.env['LEVEL'] as Level) || Level.INFO;
+
+let logConsoleMode = false;
+
+export const setLogConsoleMode = (enabled: boolean) => {
+  logConsoleMode = enabled;
+};
+
+const Logger = await createLogger(mode, level, logConsoleMode);
 
 export default Logger;

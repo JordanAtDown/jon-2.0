@@ -30,6 +30,7 @@ import { NumberPage } from '../../../tests/infra/utils/LokiJSBaseRepository.js';
 import { allPages } from '../../shared/utils/batch/GeneratePageNumbers.js';
 import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
 import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
+import { withLogTimingWithParams } from '../../shared/utils/fp/Log.js';
 
 class CopyAllFileWithCompileMetadataUseCase {
   constructor(
@@ -41,33 +42,37 @@ class CopyAllFileWithCompileMetadataUseCase {
 
   public copyAllFiles = (
     command: CopyAllFileWithCompileMetadataCommand,
-  ): TE.TaskEither<Error, void> => {
-    return pipe(
-      this.checkpoint.findBy(command.idCheckpoint),
-      TE.chain((optionAggrCheckpoint) =>
-        resolveDefaultCheckpoint(
-          optionAggrCheckpoint,
-          DefaultCheckpointDataCompiledMetadata,
-          command.idCheckpoint,
+  ): TE.TaskEither<Error, void> =>
+    withLogTimingWithParams(
+      'Copy All Files with Compile Metadata',
+      command,
+      pipe(
+        this.checkpoint.findBy(command.idCheckpoint),
+        TE.chain((optionAggrCheckpoint) =>
+          resolveDefaultCheckpoint(
+            optionAggrCheckpoint,
+            DefaultCheckpointDataCompiledMetadata,
+            command.idCheckpoint,
+          ),
         ),
-      ),
-      TE.chain((checkpointDetails: CheckpointDetails) =>
-        pipe(
-          this.compiledMetadataRepository.getTotalBy({}, command.batchSize),
-          TE.chain((numberPage) =>
-            this.iteratePages(
-              command.destinationDir,
-              numberPage,
-              {},
-              command.batchSize,
-              checkpointDetails,
-              new WrapperMutableItemTracker(
-                ItemTracker.init(command.itemCallback),
-              ),
-              new WrapperMutableProgressTracker(
-                ProgressTracker.init(
-                  numberPage.totalItem - checkpointDetails.processed.size,
-                  command.progressCallback,
+        TE.chain((checkpointDetails: CheckpointDetails) =>
+          pipe(
+            this.compiledMetadataRepository.getTotalBy({}, command.batchSize),
+            TE.chain((numberPage) =>
+              this.iteratePages(
+                command.destinationDir,
+                numberPage,
+                {},
+                command.batchSize,
+                checkpointDetails,
+                new WrapperMutableItemTracker(
+                  ItemTracker.init(command.itemCallback),
+                ),
+                new WrapperMutableProgressTracker(
+                  ProgressTracker.init(
+                    numberPage.totalItem - checkpointDetails.processed.size,
+                    command.progressCallback,
+                  ),
                 ),
               ),
             ),
@@ -75,7 +80,6 @@ class CopyAllFileWithCompileMetadataUseCase {
         ),
       ),
     );
-  };
 
   private iteratePages(
     destinationDir: string,

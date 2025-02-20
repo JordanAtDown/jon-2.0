@@ -1,4 +1,6 @@
 import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as A from 'fp-ts/lib/Array.js';
+import { pipe } from 'fp-ts/lib/function.js';
 
 /**
  * Wraps a promise in a `TaskEither` to handle success and errors.
@@ -189,3 +191,27 @@ export const filterDefinedKeys = <T extends Record<string, unknown>>(
     return acc;
   }, {} as Partial<T>);
 };
+
+/**
+ * Applique une fonction asynchrone avec limitation de concurrence
+ * sur chaque élément d'un tableau.
+ *
+ * @param array - Les éléments à traiter
+ * @param maxConcurrency - Nombre maximal de tâches en parallèle
+ * @param fn - La fonction qui transforme chaque élément en TaskEither
+ * @returns TaskEither<Error, void> : Une tâche contenant aucune erreur si tout réussit
+ */
+export function traverseArrayWithConcurrency<A>(
+  array: A[],
+  maxConcurrency: number,
+  fn: (item: A) => TE.TaskEither<Error, void>,
+): TE.TaskEither<Error, void> {
+  const batches = A.chunksOf(maxConcurrency)(array);
+
+  return pipe(
+    batches,
+    A.map((batch) => pipe(batch, A.map(fn), A.sequence(TE.ApplicativeSeq))),
+    A.sequence(TE.ApplicativeSeq),
+    TE.map(() => undefined),
+  );
+}

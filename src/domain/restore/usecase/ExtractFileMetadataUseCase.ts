@@ -24,6 +24,7 @@ import buildPatterns from '../../shared/filesystem/BuildPattern.js';
 import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
 import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
 import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
+import { withLogTimingWithParams } from '../../shared/utils/fp/Log.js';
 
 export class ExtractFileMetadataUseCase {
   constructor(
@@ -46,33 +47,38 @@ export class ExtractFileMetadataUseCase {
    */
   public extractFileMetadata = (
     command: ExtractFileMetadataCommand,
-  ): TE.TaskEither<Error, void> =>
-    pipe(
-      this.scanAndFilterFiles(
-        command.rootDirectory,
-        command.extensions,
-        command.idCheckpoint,
-      ),
-      TE.map((files) => {
-        const progress = new WrapperMutableProgressTracker(
-          ProgressTracker.init(files.length, command.progress),
-        );
-        const itemTracker = new WrapperMutableItemTracker(
-          ItemTracker.init(command.itemCallback),
-        );
-        const batches = batchArray(files, command.batchSize);
-        return { batches, progress, itemTracker: itemTracker };
-      }),
-      TE.chain(({ batches, progress, itemTracker }) =>
-        this.processBatches(
-          batches,
-          progress,
-          itemTracker,
-          command.idCheckpoint,
+  ): TE.TaskEither<Error, void> => {
+    return withLogTimingWithParams(
+      'Extract File Metadata',
+      command,
+      pipe(
+        this.scanAndFilterFiles(
           command.rootDirectory,
+          command.extensions,
+          command.idCheckpoint,
+        ),
+        TE.map((files) => {
+          const progress = new WrapperMutableProgressTracker(
+            ProgressTracker.init(files.length, command.progress),
+          );
+          const itemTracker = new WrapperMutableItemTracker(
+            ItemTracker.init(command.itemCallback),
+          );
+          const batches = batchArray(files, command.batchSize);
+          return { batches, progress, itemTracker: itemTracker };
+        }),
+        TE.chain(({ batches, progress, itemTracker }) =>
+          this.processBatches(
+            batches,
+            progress,
+            itemTracker,
+            command.idCheckpoint,
+            command.rootDirectory,
+          ),
         ),
       ),
     );
+  };
 
   /**
    * Scans the directory and filters out already processed files.

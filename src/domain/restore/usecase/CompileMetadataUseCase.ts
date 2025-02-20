@@ -27,6 +27,7 @@ import DateGenerator from '../../shared/tag/DateGenerator.js';
 import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
 import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
 import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
+import { withLogTimingWithParams } from '../../shared/utils/fp/Log.js';
 
 export class CompileMetadataUseCase {
   constructor(
@@ -49,32 +50,38 @@ export class CompileMetadataUseCase {
    *
    * @returns A TaskEither containing either an Error on failure or void on successful processing.
    */
-  compile(command: CompileMetadataUseCaseCommand): TE.TaskEither<Error, void> {
-    return pipe(
-      this.checkpoint.findBy(command.idCheckpoint),
-      TE.chain((optionAggrCheckpoint) =>
-        resolveDefaultCheckpoint(
-          optionAggrCheckpoint,
-          DefaultCheckpointDataFileMetadata,
-          command.idCheckpoint,
+  public compile = (
+    command: CompileMetadataUseCaseCommand,
+  ): TE.TaskEither<Error, void> => {
+    return withLogTimingWithParams(
+      'Compile Metadata',
+      command,
+      pipe(
+        this.checkpoint.findBy(command.idCheckpoint),
+        TE.chain((optionAggrCheckpoint) =>
+          resolveDefaultCheckpoint(
+            optionAggrCheckpoint,
+            DefaultCheckpointDataFileMetadata,
+            command.idCheckpoint,
+          ),
         ),
-      ),
-      TE.chain((checkpointDetails: CheckpointDetails) =>
-        pipe(
-          this.fileMetadataRepository.getTotalBy({}, command.batchSize),
-          TE.chain((numberPage) =>
-            this.iteratePages(
-              numberPage.totalPages,
-              {},
-              command.batchSize,
-              checkpointDetails,
-              new WrapperMutableItemTracker(
-                ItemTracker.init(command.itemCallback),
-              ),
-              new WrapperMutableProgressTracker(
-                ProgressTracker.init(
-                  numberPage.totalItem - checkpointDetails.processed.size,
-                  command.progressCallback,
+        TE.chain((checkpointDetails: CheckpointDetails) =>
+          pipe(
+            this.fileMetadataRepository.getTotalBy({}, command.batchSize),
+            TE.chain((numberPage) =>
+              this.iteratePages(
+                numberPage.totalPages,
+                {},
+                command.batchSize,
+                checkpointDetails,
+                new WrapperMutableItemTracker(
+                  ItemTracker.init(command.itemCallback),
+                ),
+                new WrapperMutableProgressTracker(
+                  ProgressTracker.init(
+                    numberPage.totalItem - checkpointDetails.processed.size,
+                    command.progressCallback,
+                  ),
                 ),
               ),
             ),
@@ -82,7 +89,7 @@ export class CompileMetadataUseCase {
         ),
       ),
     );
-  }
+  };
 
   private iteratePages(
     total: number,

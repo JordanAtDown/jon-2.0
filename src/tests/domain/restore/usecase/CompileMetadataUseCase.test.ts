@@ -6,7 +6,6 @@ import CompiledMetadataDBHelper from '../../../infra/utils/CompiledMetadataDBHel
 import FileMetadataDBHelper from '../../../infra/utils/FileMetadataDDBHelper.js';
 import initializeDB from '../../../infra/utils/InitializeDB.js';
 import LokiJSFileMetadataRepository from '../../../../infra/restore/LokiJSFileMetadataRepository.js';
-import LokiJSCompiledMetadataRepository from '../../../../infra/restore/LokiJSCompiledMetadataRepository';
 import HashDateGenerator from '../../../../infra/shared/tag/HashDateGenerator.js';
 import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem.js';
 import { CompileMetadataUseCaseCommand } from '../../../../domain/restore/usecase/CompileMetadataUseCaseCommand.js';
@@ -19,6 +18,7 @@ import { validateCheckpointEntity } from '../../../shared/utils/test/Validations
 import LokiJSCheckpoint from '../../../../infra/sharedkernel/checkpoint/LokiJSCheckpoint.js';
 import HashTagGenerator from '../../../../infra/shared/tag/HashTagGenerator.js';
 import { DATABASES } from '../../../../infra/shared/config/Database.js';
+import LokiJSCompiledMetadataRepository from '../../../../infra/restore/LokiJSCompiledMetadataRepository.js';
 
 describe('CompileMetadataUseCase', () => {
   const tempDir = path.join(__dirname, 'compile_metadata_usecase');

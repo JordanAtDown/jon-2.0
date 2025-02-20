@@ -13,4 +13,4 @@ if [ ! -x "$NODE_BIN" ]; then
 fi
 
 # Exécuter la CLI avec Node.js embarqué
-NODE_ENV=production "$NODE_BIN" "$DIR/dist/cli.js" "$@"
+LEVEL=info NODE_ENV=production "$NODE_BIN" "$DIR/dist/cli.js" "$@"

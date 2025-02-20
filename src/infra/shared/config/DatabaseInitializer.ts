@@ -20,7 +20,7 @@ export class DatabaseInitializer {
     const { filename, name } = config;
     const isTestEnvironment = process.env['NODE_ENV'] === 'test';
 
-    Logger.info(`Initializing database on file '${filename}'`);
+    Logger.debug(`Initializing database on file '${filename}'`);
     const db = new Loki(`${path}/${filename}`, {
       serializationMethod: 'normal',
       autoload: true,
@@ -42,7 +42,7 @@ export class DatabaseInitializer {
     filename: string,
     resolveReady: () => void,
   ): void {
-    Logger.info(`Database on file '${filename}' successfully loaded.`);
+    Logger.debug(`Database on file '${filename}' successfully loaded.`);
     this.checkCollectionsExist(db);
     resolveReady();
   }
@@ -51,7 +51,7 @@ export class DatabaseInitializer {
     const collections = db.listCollections();
 
     if (collections.length > 0) {
-      Logger.info(
+      Logger.debug(
         `Database '${db.name}' loaded collections: ${collections
           .map((c) => `'${c.name}' (${c.count || 0} items)`)
           .join(', ')}`,
