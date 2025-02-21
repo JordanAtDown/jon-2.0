@@ -20,8 +20,8 @@ export const applyTags = new Command('tags')
   .action(
     async (
       rootDirectory: string,
-      extensions: string,
       batchSize: string,
+      extensions: string,
       options: { consoleMode?: boolean },
     ) => {
       setLogConsoleMode(options.consoleMode || true);
@@ -57,8 +57,8 @@ const Pipeline = (applyTagsCommandInput: {
         loadDictionariesStep(),
         TE.chain((dictionaries) => {
           const applyTagsCommand: ApplyTagsDictionaryCommand = {
-            batchSize: Number(applyTagsCommandInput.batchSize),
-            extensions: Array.from(applyTagsCommandInput.extensions),
+            batchSize: parseInt(applyTagsCommandInput.batchSize, 10),
+            extensions: applyTagsCommandInput.extensions.split(','),
             rootDirectory: applyTagsCommandInput.rootDirectory,
           };
 

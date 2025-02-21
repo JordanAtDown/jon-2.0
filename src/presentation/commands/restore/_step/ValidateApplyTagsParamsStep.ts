@@ -9,24 +9,18 @@ import {
 } from '../../utils/Validations.js';
 import { pipe } from 'fp-ts/lib/function.js';
 
-export type ExtractCommandInput = {
+export type ApplyCommandInput = {
   rootDirectory: string;
   extensions: string;
   batchSize: string;
 };
 
 export const validateApplyTagsParamsInput: PipelineStep<
-  ExtractCommandInput,
-  ExtractCommandInput
+  ApplyCommandInput,
+  ApplyCommandInput
 > = (input) => TE.fromEither(validateInput(input));
 
-const validateInput = combineValidations<ExtractCommandInput>(
-  (compileCommandInput) =>
-    pipe(
-      compileCommandInput.batchSize,
-      validateBatchSize,
-      E.map(() => compileCommandInput),
-    ),
+const validateInput = combineValidations<ApplyCommandInput>(
   (params) =>
     pipe(
       params.rootDirectory,
