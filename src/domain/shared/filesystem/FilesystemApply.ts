@@ -13,6 +13,11 @@ type FilesystemApplyCommand = {
   exifProperties: ExifProperty<any>[];
 };
 
+type ExifApplyCommand = {
+  filepath: string;
+  exifProperties: ExifProperty<any>[];
+};
+
 type WithDestPath = FilesystemApplyCommand & {
   destinationPath: string;
 };
@@ -66,6 +71,18 @@ const exif = (
   );
 };
 
+const exif2 = (command: ExifApplyCommand): TE.TaskEither<Error, void> => {
+  return pipe(
+    exifApplyTo(command.filepath, command.exifProperties),
+    TE.mapLeft((_error: Error) => {
+      Logger.error(_error.message);
+      return new Error(
+        `FAILED_APPLY_EXIF: CAN'T APPLY EXIF ON FILE ${command.filepath}`,
+      );
+    }),
+  );
+};
+
 const track = (_withDestPath: WithDestPath): TE.TaskEither<Error, void> => {
   return TE.tryCatch(
     () => {
@@ -91,4 +108,19 @@ const filesystemApply = (
   );
 };
 
-export { filesystemApply, FilesystemApplyCommand };
+const onlyExifApply = (
+  command: ExifApplyCommand,
+): TE.TaskEither<Error, void> => {
+  return pipe(
+    TE.right(command),
+    TE.chain(exif2),
+    TE.map(() => undefined),
+  );
+};
+
+export {
+  filesystemApply,
+  FilesystemApplyCommand,
+  ExifApplyCommand,
+  onlyExifApply,
+};
