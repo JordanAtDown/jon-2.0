@@ -75,15 +75,25 @@ export class ApplyTagsDictionaryUseCase {
                 ),
               ),
               TE.map((tags) => {
-                const keywordsProperty = new ExifPropertyBuilder<string[]>(
-                  'Keywords',
-                )
-                  .withValueGetter(() => Array.from(tags))
-                  .withValidator(validateKeywords)
-                  .withErrorMessage(`Invalid for ${fileMetadata.fullPath}`)
-                  .build();
-
-                return [keywordsProperty];
+                if (fileMetadata.type === 'VIDEO') {
+                  const keywordsProperty = new ExifPropertyBuilder<string[]>(
+                    'XMP:Subject',
+                  )
+                    .withValueGetter(() => Array.from(tags))
+                    .withValidator(validateKeywords)
+                    .withErrorMessage(`Invalid for ${fileMetadata.fullPath}`)
+                    .build();
+                  return [keywordsProperty];
+                } else {
+                  const keywordsProperty = new ExifPropertyBuilder<string[]>(
+                    'Keywords',
+                  )
+                    .withValueGetter(() => Array.from(tags))
+                    .withValidator(validateKeywords)
+                    .withErrorMessage(`Invalid for ${fileMetadata.fullPath}`)
+                    .build();
+                  return [keywordsProperty];
+                }
               }),
               TE.chain((exifProperties) =>
                 onlyExifApply({
