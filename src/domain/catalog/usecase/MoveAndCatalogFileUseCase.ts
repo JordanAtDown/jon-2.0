@@ -107,7 +107,7 @@ export class MoveAndCatalogFileUseCase {
   ): TE.TaskEither<Error, void> =>
     pipe(
       batches,
-      TE.traverseArray((batch) =>
+      TE.traverseSeqArray((batch) =>
         pipe(
           batch,
           A.map((filePath) => this.extractFilepath(filePath)),

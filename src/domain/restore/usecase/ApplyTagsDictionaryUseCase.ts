@@ -53,7 +53,9 @@ export class ApplyTagsDictionaryUseCase {
     batches: string[][],
   ): TE.TaskEither<Error, void> => {
     return pipe(
-      TE.traverseArray((batch: string[]) => this.processBatch(batch))(batches),
+      TE.traverseSeqArray((batch: string[]) => this.processBatch(batch))(
+        batches,
+      ),
       TE.map(() => void 0),
     );
   };
