@@ -5,7 +5,6 @@ import {
 } from './_step/ValidateMoveParamsStep.js';
 import { pipe } from 'fp-ts/lib/function.js';
 import * as TE from 'fp-ts/lib/TaskEither.js';
-import { initializeUIStep } from '../_step/InitializeUIStep.js';
 import { moveStep } from './_step/MoveStep.js';
 import { setLogConsoleMode } from '../utils/Logger.js';
 
@@ -42,24 +41,12 @@ export const move = new Command('move')
 const Pipeline = (input: MoveCommandInput): TE.TaskEither<Error, void> => {
   return pipe(
     validateMoveParamsInput(input),
-    TE.chain((validatedParams) =>
-      pipe(
-        initializeUIStep(),
-        TE.map((callbacks) => ({
-          validatedParams,
-          callbacks,
-        })),
-      ),
-    ),
-
-    TE.chain(({ validatedParams, callbacks }) =>
+    TE.chain((input) =>
       moveStep({
-        rootDirectory: validatedParams.rootDirectory,
-        destinationDirectory: validatedParams.destDir,
-        extensions: validatedParams.extensions.split(','),
-        batchSize: parseInt(validatedParams.batchSize, 10),
-        progress: callbacks.onProgressUpdateCallback,
-        itemCallback: callbacks.onItemTrackCallback,
+        rootDirectory: input.rootDirectory,
+        destinationDirectory: input.destDir,
+        extensions: input.extensions.split(','),
+        batchSize: parseInt(input.batchSize, 10),
       })(),
     ),
   );

@@ -16,15 +16,10 @@ import { ExifPropertyBuilder } from '../../shared/exif/ExifProperty.js';
 import { validateDateTime } from '../../shared/exif/validation/Validations.js';
 import DateTimeOriginal from '../../shared/extractor/DateTimeOriginal.js';
 import { filesystemApply } from '../../shared/filesystem/FilesystemApply.js';
-import { ItemTrackerBuilder } from '../../shared/tracker/ItemTrackBuilder.js';
 import FileScanner from '../../shared/filesystem/FileScanner.js';
 import Extractor from '../../shared/extractor/Extractor.js';
-import ProgressTracker from '../../shared/tracker/ProgressTracker.js';
-import { ItemState, ItemTracker } from '../../shared/tracker/ItemTracker.js';
 import compositeExtractor from '../../shared/extractor/CompositeExtractor.js';
 import buildFilenameWithFormat from '../../shared/filesystem/BuildFilenameWithFormat.js';
-import WrapperMutableProgressTracker from '../../shared/tracker/WrapperMutableProgressTracker.js';
-import WrapperMutableItemTracker from '../../shared/tracker/WrapperMutableItemTracker.js';
 import { withLogTimingWithParams } from '../../shared/utils/fp/Log.js';
 
 export class MoveAndCatalogFileUseCase {
@@ -63,12 +58,6 @@ export class MoveAndCatalogFileUseCase {
           return this.processBatches(
             batchArray(files, command.batchSize),
             command.destinationDirectory,
-            new WrapperMutableProgressTracker(
-              ProgressTracker.init(files.length, command.progress),
-            ),
-            new WrapperMutableItemTracker(
-              ItemTracker.init(command.itemCallback),
-            ),
           );
         }),
       ),
@@ -76,7 +65,6 @@ export class MoveAndCatalogFileUseCase {
 
   private extractFilepath = (
     filePath: string,
-    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, Option<FileMetadata>> =>
     pipe(
       TE.fromTask(
@@ -90,11 +78,6 @@ export class MoveAndCatalogFileUseCase {
           optionFileMetadata,
           O.fold(
             () => {
-              itemTracker.track(
-                ItemTrackerBuilder.start()
-                  .withId(filePath)
-                  .asNormalItem(ItemState.UNPROCESS),
-              );
               return O.none;
             },
             (metadata) => O.some(metadata),
@@ -106,41 +89,30 @@ export class MoveAndCatalogFileUseCase {
   private filterAndEnrichMetadas = (
     optionFilemetadas: Option<FileMetadata>[],
     destDir: string,
-    progressTracker: WrapperMutableProgressTracker,
-    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, void> => {
     return pipe(
       optionFilemetadas,
       A.filterMap((optionFileMetadata) => optionFileMetadata),
       (fileMetadatas) =>
-        this.processEnrichedMetadataBatch(
-          fileMetadatas,
-          destDir,
-          progressTracker,
-          itemTracker,
-        ),
+        this.processEnrichedMetadataBatch(fileMetadatas, destDir),
     );
   };
 
   private processBatches = (
     batches: string[][],
     destDir: string,
-    progressTracker: WrapperMutableProgressTracker,
-    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, void> =>
     pipe(
       batches,
       TE.traverseArray((batch) =>
         pipe(
           batch,
-          A.map((filePath) => this.extractFilepath(filePath, itemTracker)),
+          A.map((filePath) => this.extractFilepath(filePath)),
           TE.sequenceArray,
           TE.chain((optionFileMetadatas) =>
             this.filterAndEnrichMetadas(
               Array.from(optionFileMetadatas),
               destDir,
-              progressTracker,
-              itemTracker,
             ),
           ),
         ),
@@ -151,8 +123,6 @@ export class MoveAndCatalogFileUseCase {
   private processEnrichedMetadataBatch = (
     fileMetadatas: FileMetadata[],
     destDir: string,
-    progressTracker: WrapperMutableProgressTracker,
-    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, void> =>
     pipe(
       fileMetadatas,
@@ -161,19 +131,12 @@ export class MoveAndCatalogFileUseCase {
           fileMetadata.enrichWithDate((name) => extractDate(routes, name)),
           O.fold(
             () => {
-              itemTracker.track(
-                ItemTrackerBuilder.start()
-                  .withId(fileMetadata.fullPath)
-                  .asNormalItem(ItemState.UNPROCESS),
-              );
               return TE.of(void 0);
             },
             (fileMetadataEnrichWithDate) => {
               return this.processSingleFile(
                 fileMetadataEnrichWithDate,
                 destDir,
-                progressTracker,
-                itemTracker,
               );
             },
           ),
@@ -186,8 +149,6 @@ export class MoveAndCatalogFileUseCase {
   private processSingleFile = (
     metadata: DateMetadata,
     destDir: string,
-    tracker: WrapperMutableProgressTracker,
-    itemTracker: WrapperMutableItemTracker,
   ): TE.TaskEither<Error, void> => {
     const destinationDirPath = buildDirectoryPath(
       destDir,
@@ -205,12 +166,10 @@ export class MoveAndCatalogFileUseCase {
       filepath: metadata.fullPath,
       destPath: destinationDirPath,
       exifProperties: Array.of(dateTimeOriginalProperty),
-      itemTracker: itemTracker,
     };
 
     return pipe(
       filesystemApply(command),
-      TE.chain(() => TE.fromIO(() => tracker.increment())),
       TE.map(() => void 0),
     );
   };

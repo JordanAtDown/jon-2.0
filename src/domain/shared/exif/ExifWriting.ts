@@ -37,7 +37,7 @@ const writeExifData = (
       },
       (reason) => {
         Logger.error(
-          `FAILED_EXIF_WRITE: on file ${filePath} with exif ${exifData}`,
+          `FAILED_EXIF_WRITE: on file ${filePath} with exif ${JSON.stringify(exifData)}`,
         );
         console.error(
           `FAILED_EXIF_WRITE: on file ${filePath} with exif ${exifData}`,
