@@ -31,7 +31,7 @@ jobs:
           unzip -j runtimes/node-windows.zip "*/node.exe" -d node/22
 
       - name: Install dependencies
-        run: npm install --production
+        run: npm ci
 
       - name: Build and package project
         run: npm run dist
