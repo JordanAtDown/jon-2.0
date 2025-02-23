@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import { pipe } from 'fp-ts/lib/function.js';
+import { cpus } from 'os';
 import {
   CopyCommandInput,
   validateCopyAllParamsInput,
@@ -13,6 +14,10 @@ import { metadataRepositoryStep } from '../_step/MetadataRepositoryStep.js';
 import { copyAllStep } from './_step/CopyAllStep.js';
 import { setLogConsoleMode } from '../utils/Logger.js';
 import { closeDB } from '../utils/CloseDB.js';
+import { setMaxProcs } from '../../../domain/shared/exif/ExifWriting.js';
+
+const numCores = cpus().length;
+const defaultProcs = Math.max(1, Math.floor(numCores * 0.8));
 
 export const copy = new Command('copy')
   .description('Copy all files with compiled metadata to new path')
@@ -20,14 +25,21 @@ export const copy = new Command('copy')
   .argument('<idCheckpoint>', 'identifier checkpoint')
   .argument('<batchSize>', 'size of the batch')
   .option('--console-mode', 'enable console log mode')
+  .option(
+    '-p, --procs <number>',
+    `number of processes to use (default: ${defaultProcs})`,
+  )
   .action(
     (
       destination: string,
       idCheckpoint: string,
       batchSize: string,
-      options: { consoleMode?: boolean },
+      options: { consoleMode?: boolean; procs?: string },
     ) => {
       setLogConsoleMode(options.consoleMode || true);
+      const procs = options.procs ? parseInt(options.procs, 10) : defaultProcs;
+      setMaxProcs(procs);
+
       const copyCommandInput = {
         destDir: destination,
         idCheckpoint,

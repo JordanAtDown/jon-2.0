@@ -4,8 +4,8 @@ import moveFile from './MoveFile.js';
 import { ExifProperty } from '../exif/ExifProperty.js';
 import { Either, right, left } from 'fp-ts/lib/Either.js';
 import { validateExifProperties } from '../exif/validation/Validations.js';
-import exifApplyTo from '../exif/ExifWriting.js';
 import Logger from '../../../presentation/commands/utils/Logger.js';
+import { exifApplyTo } from '../exif/ExifWriting.js';
 
 type FilesystemApplyCommand = {
   filepath: string;

@@ -1,5 +1,6 @@
 import { pipe } from 'fp-ts/lib/function.js';
 import * as TE from 'fp-ts/lib/TaskEither.js';
+import { cpus } from 'os';
 import { setLogConsoleMode } from '../utils/Logger.js';
 import HashTagGenerator from '../../../infra/shared/tag/HashTagGenerator.js';
 import { Command } from 'commander';
@@ -7,6 +8,10 @@ import { loadDictionariesStep } from '../_step/LoadDictionariesStep.js';
 import { applyTagsStep } from './_step/ApplyTagsStep.js';
 import { validateApplyTagsParamsInput } from './_step/ValidateApplyTagsParamsStep.js';
 import { ApplyTagsDictionaryCommand } from '../../../domain/restore/usecase/ApplyTagsDictionaryUseCase.js';
+import { setMaxProcs } from '../../../domain/shared/exif/ExifWriting.js';
+
+const numCores = cpus().length;
+const defaultProcs = Math.max(1, Math.floor(numCores * 0.8));
 
 export const applyTags = new Command('tags')
   .description('Apply tags from dictionary to all file from root directory')
@@ -17,14 +22,21 @@ export const applyTags = new Command('tags')
     'list of extensions, separated by comma (e.g., video,image,jpg)',
   )
   .option('--console-mode', 'enable console log mode')
+  .option(
+    '-p, --procs <number>',
+    `number of processes to use (default: ${defaultProcs})`,
+  )
   .action(
     async (
       rootDirectory: string,
       batchSize: string,
       extensions: string,
-      options: { consoleMode?: boolean },
+      options: { consoleMode?: boolean; procs?: string },
     ) => {
       setLogConsoleMode(options.consoleMode || true);
+      const procs = options.procs ? parseInt(options.procs, 10) : defaultProcs;
+      setMaxProcs(procs);
+
       const applyTagsCommandInput = {
         rootDirectory,
         extensions,

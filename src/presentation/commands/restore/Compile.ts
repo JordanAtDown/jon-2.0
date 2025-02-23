@@ -1,5 +1,6 @@
 import { pipe } from 'fp-ts/lib/function.js';
 import * as TE from 'fp-ts/lib/TaskEither.js';
+import { cpus } from 'os';
 import { validateCompileParamsInput } from './_step/ValidateCompileParamsStep.js';
 import { CompileMetadataStep } from './_step/CompileMetadataStep.js';
 import { setLogConsoleMode } from '../utils/Logger.js';
@@ -15,6 +16,10 @@ import { metadataCompileRepositoryStep } from '../_step/MetadataCompileRepositor
 import { checkpointRepositoryStep } from '../_step/CheckpointRepositoryStep.js';
 import { loadDictionariesStep } from '../_step/LoadDictionariesStep.js';
 import { CompileMetadataUseCaseCommand } from '../../../domain/restore/usecase/CompileMetadataUseCaseCommand.js';
+import { setMaxProcs } from '../../../domain/shared/exif/ExifWriting.js';
+
+const numCores = cpus().length;
+const defaultProcs = Math.max(1, Math.floor(numCores * 0.8));
 
 export const compile = new Command('compile')
   .description('Compile metadata using the defined pipeline')
@@ -28,6 +33,7 @@ export const compile = new Command('compile')
       options: { consoleMode?: boolean },
     ) => {
       setLogConsoleMode(options.consoleMode || true);
+      setMaxProcs(defaultProcs);
       const compileCommandInput = {
         batchSize,
         idCheckpoint,
