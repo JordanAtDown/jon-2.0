@@ -61,6 +61,7 @@ export class MoveAndCatalogFileUseCase {
           return this.processBatches(
             batchArray(files, command.batchSize),
             command.destinationDirectory,
+            command.format,
           );
         }),
       ),
@@ -92,18 +93,20 @@ export class MoveAndCatalogFileUseCase {
   private filterAndEnrichMetadas = (
     optionFilemetadas: Option<FileMetadata>[],
     destDir: string,
+    format: string,
   ): TE.TaskEither<Error, void> => {
     return pipe(
       optionFilemetadas,
       A.filterMap((optionFileMetadata) => optionFileMetadata),
       (fileMetadatas) =>
-        this.processEnrichedMetadataBatch(fileMetadatas, destDir),
+        this.processEnrichedMetadataBatch(fileMetadatas, destDir, format),
     );
   };
 
   private processBatches = (
     batches: string[][],
     destDir: string,
+    format: string,
   ): TE.TaskEither<Error, void> =>
     pipe(
       batches,
@@ -116,6 +119,7 @@ export class MoveAndCatalogFileUseCase {
             this.filterAndEnrichMetadas(
               Array.from(optionFileMetadatas),
               destDir,
+              format,
             ),
           ),
         ),
@@ -126,6 +130,7 @@ export class MoveAndCatalogFileUseCase {
   private processEnrichedMetadataBatch = (
     fileMetadatas: FileMetadata[],
     destDir: string,
+    format: string,
   ): TE.TaskEither<Error, void> =>
     pipe(
       fileMetadatas,
@@ -140,6 +145,7 @@ export class MoveAndCatalogFileUseCase {
               return this.processSingleFile(
                 fileMetadataEnrichWithDate,
                 destDir,
+                format,
               );
             },
           ),
@@ -152,11 +158,17 @@ export class MoveAndCatalogFileUseCase {
   private processSingleFile = (
     metadata: DateMetadata,
     destDir: string,
+    format: string,
   ): TE.TaskEither<Error, void> => {
     const destinationDirPath = buildDirectoryPath(
       destDir,
-      metadata.date,
+      {
+        date: metadata.date,
+        type: metadata.type,
+        extension: metadata.extension,
+      },
       buildFilenameWithFormat(metadata.date, metadata.extension, metadata.type),
+      format,
     );
     const dateTimeOriginalProperty = new ExifPropertyBuilder<string>(
       'DateTimeOriginal',

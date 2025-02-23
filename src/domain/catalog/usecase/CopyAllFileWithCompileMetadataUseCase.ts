@@ -135,7 +135,11 @@ class CopyAllFileWithCompileMetadataUseCase {
         );
         const destinationPath = buildDirectoryPath(
           destinationDir,
-          date.value,
+          {
+            date: date.value,
+            type: metadata.type,
+            extension: metadata.extension,
+          },
           filename,
         );
 

@@ -10,7 +10,6 @@ import { moveStep } from './_step/MoveStep.js';
 import { setLogConsoleMode } from '../utils/Logger.js';
 import { setMaxProcs } from '../../../domain/shared/exif/ExifWriting.js';
 
-// Récupérer le nombre total de cœurs CPU disponibles
 const numCores = cpus().length;
 
 const defaultProcs = Math.max(1, Math.floor(numCores * 0.8));
@@ -25,15 +24,19 @@ export const move = new Command('move')
     '-p, --procs <number>',
     `number of processes to use (default: ${defaultProcs})`,
   )
+  .option(
+    '-f, --format <string>',
+    `format build directory destination path (default: YYYY/MM)`,
+  )
   .action(
     (
       rootDir: string,
       destDir: string,
       extensions: string,
       batch: string,
-      options: { procs?: string },
+      options: { procs?: string; format?: string },
     ) => {
-      setLogConsoleMode(false);
+      setLogConsoleMode(true);
       const procs = options.procs ? parseInt(options.procs, 10) : defaultProcs;
       setMaxProcs(procs);
 
@@ -42,6 +45,7 @@ export const move = new Command('move')
         destDir,
         extensions,
         batchSize: batch,
+        format: options.format || 'YYYY/MM',
       };
 
       pipe(
@@ -67,6 +71,7 @@ const Pipeline = (input: MoveCommandInput): TE.TaskEither<Error, void> => {
         destinationDirectory: input.destDir,
         extensions: input.extensions.split(','),
         batchSize: parseInt(input.batchSize, 10),
+        format: input.format,
       })(),
     ),
   );

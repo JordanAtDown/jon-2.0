@@ -6,6 +6,7 @@ import {
   validateBatchSize,
   validateDirectoryExists,
   validateExtensions,
+  validateFormatPath,
 } from '../../utils/Validations.js';
 import { pipe } from 'fp-ts/lib/function.js';
 
@@ -14,6 +15,7 @@ export type MoveCommandInput = {
   destDir: string;
   extensions: string;
   batchSize: string;
+  format: string;
 };
 
 export const validateMoveParamsInput: PipelineStep<
@@ -22,12 +24,6 @@ export const validateMoveParamsInput: PipelineStep<
 > = (input) => TE.fromEither(validateInput(input));
 
 const validateInput = combineValidations<MoveCommandInput>(
-  (compileCommandInput) =>
-    pipe(
-      compileCommandInput.batchSize,
-      validateBatchSize,
-      E.map(() => compileCommandInput),
-    ),
   (params) =>
     pipe(
       params.rootDirectory,
@@ -50,6 +46,12 @@ const validateInput = combineValidations<MoveCommandInput>(
     pipe(
       params.batchSize,
       validateBatchSize,
+      E.map(() => params),
+    ),
+  (params) =>
+    pipe(
+      params.format,
+      validateFormatPath,
       E.map(() => params),
     ),
 );

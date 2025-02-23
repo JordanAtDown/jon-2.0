@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { validateCondition } from './CombineValidations.js';
 import * as E from 'fp-ts/Either';
 import EXTENSIONS from '../../../domain/shared/filesystem/Extensions.js';
+import { validateFormat } from '../../../domain/shared/filesystem/BuildDirectoryPath.js';
 
 const isDirectory = (path: string): boolean => {
   try {
@@ -54,4 +55,9 @@ export const validateIsCSV = validateCondition<string>(
       return false;
     }
   },
+);
+
+export const validateFormatPath = validateCondition<string>(
+  `Le format contient des placeholders invalides. Seuls YYYY, MM, TYPE et EXT sont autorisés.`,
+  (format) => validateFormat(format),
 );
