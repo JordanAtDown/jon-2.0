@@ -2,7 +2,6 @@ import { describe, it, beforeAll, afterAll, expect } from 'vitest';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { ExifPropertyBuilder } from '../../../../domain/shared/exif/ExifProperty.js';
-import exifApplyTo from '../../../../domain/shared/exif/ExifWriting.js';
 import {
   expectTaskEitherLeft,
   expectTaskEitherRight,
@@ -14,6 +13,7 @@ import {
   writeBase64ImageToFile,
 } from '../../../shared/utils/test/Image.js';
 import { deleteFileOrDirectory } from '../../../shared/utils/test/Filesystem.js';
+import { exifApplyTo } from '../../../../domain/shared/exif/ExifWriting.js';
 
 const TEST_DIR = path.join(__dirname, 'test-output');
 const TEST_IMAGE_PATH = path.join(TEST_DIR, 'testImage.jpg');
