@@ -7,7 +7,7 @@ import { ExifTool } from 'exiftool-vendored';
 let maxProcs = 3;
 
 const setMaxProcs = (newMaxProcs: number): void => {
-  Logger.verbose(`Setting max procs to ${newMaxProcs}`);
+  Logger.info(`Setting max procs to ${newMaxProcs}`);
 };
 
 const exiftoolCustom = new ExifTool({ maxProcs: maxProcs });
