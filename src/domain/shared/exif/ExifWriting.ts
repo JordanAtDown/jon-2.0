@@ -27,12 +27,19 @@ const writeExifData = (
 ): TE.TaskEither<Error, void> => {
   return pipe(
     TE.tryCatch(
-      () =>
-        exiftool.write(filePath, exifData, {
+      () => {
+        Logger.verbose(
+          `START_EXIF_WRITE: Writing EXIF data to file ${filePath} with data ${JSON.stringify(exifData)}`,
+        );
+        return exiftool.write(filePath, exifData, {
           writeArgs: ['-overwrite_original'],
-        }),
+        });
+      },
       (reason) => {
         Logger.error(
+          `FAILED_EXIF_WRITE: on file ${filePath} with exif ${exifData}`,
+        );
+        console.error(
           `FAILED_EXIF_WRITE: on file ${filePath} with exif ${exifData}`,
         );
         return new Error(`FAILED_EXIF_WRITE: ${reason}`);
