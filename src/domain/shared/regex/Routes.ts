@@ -215,15 +215,16 @@ const extractSpacedDashDateTime: DateExtractor = (filename) => {
   );
 };
 
-const regexIMGWithHyphenDate = /IMG-([0-9]{8})-WA[0-9]{4}/;
+const regexIMGWithHyphenDate = /(IMG|VID)-([0-9]{8})-WA[0-9]{4}/;
 const extractIMGWithHyphenDate: DateExtractor = (filename) => {
   const match = filename.match(regexIMGWithHyphenDate);
   return pipe(
     O.fromNullable(match),
     O.filter(
-      (matches): matches is [string, string] => matches[1] !== undefined,
+      (matches): matches is [string, string, string] =>
+        matches.length === 3 && matches[2] !== undefined,
     ),
-    O.map(([_, date]) => DateTime.fromFormat(date, 'yyyyMMdd')),
+    O.map(([_, __, date]) => DateTime.fromFormat(date, 'yyyyMMdd')),
   );
 };
 

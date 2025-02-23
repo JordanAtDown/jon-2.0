@@ -7,6 +7,10 @@ import { expectNone, expectSome } from '../../../shared/utils/test/Expected.js';
 describe('ExtractDate should', () => {
   const testCases = [
     {
+      filename: 'VID-20230621-WA0009',
+      expected: DateTime.fromISO('2023-06-21T00:00:00'),
+    },
+    {
       filename: 'IMG-20230219-WA0000',
       expected: DateTime.fromISO('2023-02-19T00:00:00'),
     },
