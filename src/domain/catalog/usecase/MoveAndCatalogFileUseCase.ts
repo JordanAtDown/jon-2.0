@@ -15,7 +15,10 @@ import { buildDirectoryPath } from '../../shared/filesystem/BuildDirectoryPath.j
 import { ExifPropertyBuilder } from '../../shared/exif/ExifProperty.js';
 import { validateDateTime } from '../../shared/exif/validation/Validations.js';
 import DateTimeOriginal from '../../shared/extractor/DateTimeOriginal.js';
-import { filesystemApply } from '../../shared/filesystem/FilesystemApply.js';
+import {
+  fileMovedOnly,
+  filesystemApply,
+} from '../../shared/filesystem/FilesystemApply.js';
 import FileScanner from '../../shared/filesystem/FileScanner.js';
 import Extractor from '../../shared/extractor/Extractor.js';
 import compositeExtractor from '../../shared/extractor/CompositeExtractor.js';
@@ -168,10 +171,17 @@ export class MoveAndCatalogFileUseCase {
       exifProperties: Array.of(dateTimeOriginalProperty),
     };
 
-    return pipe(
-      filesystemApply(command),
-      TE.map(() => void 0),
-    );
+    if (!!metadata.exif) {
+      return pipe(
+        filesystemApply(command),
+        TE.map(() => void 0),
+      );
+    } else {
+      return pipe(
+        fileMovedOnly(command),
+        TE.map(() => void 0),
+      );
+    }
   };
 }
 

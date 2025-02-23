@@ -83,20 +83,6 @@ const exif2 = (command: ExifApplyCommand): TE.TaskEither<Error, void> => {
   );
 };
 
-const track = (_withDestPath: WithDestPath): TE.TaskEither<Error, void> => {
-  return TE.tryCatch(
-    () => {
-      return Promise.resolve();
-    },
-    (reason) =>
-      new Error(
-        `FAILED_TRACKING: ${
-          reason instanceof Error ? reason.message : String(reason)
-        }`,
-      ),
-  );
-};
-
 const filesystemApply = (
   command: FilesystemApplyCommand,
 ): TE.TaskEither<Error, void> => {
@@ -104,7 +90,17 @@ const filesystemApply = (
     TE.fromEither(check(command)),
     TE.chain(exif),
     TE.chain(move),
-    TE.chain(track),
+    TE.map(() => undefined),
+  );
+};
+
+const fileMovedOnly = (
+  command: FilesystemApplyCommand,
+): TE.TaskEither<Error, void> => {
+  return pipe(
+    TE.of(command),
+    TE.chain(move),
+    TE.map(() => undefined),
   );
 };
 
@@ -123,4 +119,5 @@ export {
   FilesystemApplyCommand,
   ExifApplyCommand,
   onlyExifApply,
+  fileMovedOnly,
 };
