@@ -2,6 +2,7 @@ import { ExifProperty, ExifValue } from './ExifProperty.js';
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import { pipe } from 'fp-ts/lib/function.js';
 import { exiftool } from 'exiftool-vendored';
+import Logger from '../../../presentation/commands/utils/Logger.js';
 
 const createExifData = (
   exifProperties: ExifProperty<any>[],
@@ -30,7 +31,12 @@ const writeExifData = (
         exiftool.write(filePath, exifData, {
           writeArgs: ['-overwrite_original'],
         }),
-      (reason) => new Error(`FAILED_EXIF_WRITE: ${reason}`),
+      (reason) => {
+        Logger.error(
+          `FAILED_EXIF_WRITE: on file ${filePath} with exif ${exifData}`,
+        );
+        return new Error(`FAILED_EXIF_WRITE: ${reason}`);
+      },
     ),
     TE.map(() => void 0),
   );
