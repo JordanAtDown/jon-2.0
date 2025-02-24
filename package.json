@@ -11,7 +11,7 @@
   "scripts": {
     "start": "NODE_ENV=dev tsx src/presentation/commands/App.ts",
     "build": "tsc && npm run copy-resources && npm run copy-conf-npm",
-    "copy-resources": "cp -r resources dist/",
+    "copy-resources": "cp -r resources dist/ && cp jon2.0.ico dist/",
     "copy-conf-npm": "cp package.json dist/ && cp README.md dist/",
     "dist": "npm run clean && npm run build && npm run dist:tar && npm run dist:zip",
     "dist:tar": "tar -czvf jon2.0-linux.tar.gz dist/ node_modules/ jon2.0.sh node/22/node",
